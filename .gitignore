@@ -1,0 +1,13 @@
+# Python environment
+venv/
+__pycache__/
+*.pyc
+
+# Local session logs and temporary screenshots
+logs/
+screenshots/
+test_screenshots/
+
+# Secrets and environment configurations
+.env
+.env.*

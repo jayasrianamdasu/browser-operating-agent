@@ -1,0 +1,16 @@
+# Linux system dependencies required for Playwright / Chromium headless browser to run on Streamlit Cloud
+libevent-2.1-7
+libflac8
+libjpeg62-turbo
+libpng16-16
+libsndfile1
+libvpx7
+libwebp7
+libx264-164
+libxml2
+libxslt1.1
+libopus0
+libgbm1
+libnss3
+libnspr4
+libasound2
