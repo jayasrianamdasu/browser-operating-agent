@@ -113,7 +113,6 @@ def extract_cities_from_query(url: str, query: str = "") -> tuple:
     Defaults to ('Bangalore', 'BLR', 'Hyderabad', 'HYD').
     """
     import urllib.parse
-    import re
     
     origin = "Bangalore"
     origin_code = "BLR"
@@ -135,18 +134,47 @@ def extract_cities_from_query(url: str, query: str = "") -> tuple:
         
     query_lower = query.lower()
     
-    # Try regex match for "from <origin> to <destination>"
-    match = re.search(r"from\s+([a-zA-Z\s\-]+?)\s+to\s+(.+)", query_lower)
-    if match:
-        origin_candidate = match.group(1).strip()
-        dest_candidate = match.group(2).strip()
+    # Check if there is " to " in the query, which is standard for flight routing
+    if " to " in query_lower:
+        # Split by " to " to find parts before and after
+        parts = query_lower.split(" to ", 1)
+        before_to = parts[0].strip()
+        after_to = parts[1].strip()
         
-        # Clean candidates of common trailing query noise
+        # Origin candidate is the last words of before_to
+        # Let's extract origin candidate by removing common leading search noise
+        origin_candidate = before_to
+        noises = [
+            "cheapest flight tickets from ",
+            "cheapest flights from ",
+            "cheapest tickets from ",
+            "flight options from ",
+            "cheapest flight from ",
+            "flights from ",
+            "flight from ",
+            "tickets from ",
+            "ticket from ",
+            "cheapest flights ",
+            "cheapest flight ",
+            "search for ",
+            "flights ",
+            "flight ",
+            "search ",
+            "from ",
+        ]
+        for noise in noises:
+            if origin_candidate.startswith(noise):
+                origin_candidate = origin_candidate[len(noise):].strip()
+            # If the noise term is inside, extract the part after it
+            if " " + noise in origin_candidate:
+                origin_candidate = origin_candidate.split(" " + noise)[-1].strip()
+                
+        # Destination candidate is the first words of after_to
+        dest_candidate = after_to
+        # Clean trailing noise using stopwords
         for stopword in [" and ", " show ", " list ", " with ", " for ", " next ", " this ", " cheapest "]:
             if stopword in f" {dest_candidate} ":
                 dest_candidate = dest_candidate.split(stopword)[0].strip()
-            if stopword in f" {origin_candidate} ":
-                origin_candidate = origin_candidate.split(stopword)[0].strip()
                 
         if origin_candidate:
             origin = origin_candidate.title()
