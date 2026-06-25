@@ -136,7 +136,7 @@ def extract_cities_from_query(url: str, query: str = "") -> tuple:
     query_lower = query.lower()
     
     # Try regex match for "from <origin> to <destination>"
-    match = re.search(r"from\s+([a-zA-Z\s\-]+?)\s+to\s+([a-zA-Z\s\-]+)", query_lower)
+    match = re.search(r"from\s+([a-zA-Z\s\-]+?)\s+to\s+(.+)", query_lower)
     if match:
         origin_candidate = match.group(1).strip()
         dest_candidate = match.group(2).strip()
