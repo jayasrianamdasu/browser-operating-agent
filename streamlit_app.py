@@ -298,10 +298,13 @@ with tab1:
                 
             # Run the async pipeline in a separate thread to avoid AnyIO / nest_asyncio event loop conflicts under Python 3.14+
             import threading
+            from streamlit.runtime.scriptrunner import add_script_run_ctx, get_script_run_ctx
             
             def run_async_in_thread(coro):
                 result = []
                 exception = []
+                ctx = get_script_run_ctx()
+                
                 def target():
                     loop = asyncio.new_event_loop()
                     asyncio.set_event_loop(loop)
@@ -314,6 +317,7 @@ with tab1:
                         loop.close()
                 
                 thread = threading.Thread(target=target)
+                add_script_run_ctx(thread, ctx)
                 thread.start()
                 thread.join()
                 if exception:
