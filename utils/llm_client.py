@@ -122,11 +122,13 @@ def call_mock_llm(prompt: str, system_prompt: str = None, json_mode: bool = Fals
                 "recommendation systems, understanding human speech, self-driving cars, generative tools, and competing at the highest level in strategic games."
             )
         elif any(w in prompt_lower for w in ["flight", "ticket", "bangalore", "hyderabad"]):
+            from utils.helpers import extract_cities_from_query
+            origin, origin_code, destination, dest_code = extract_cities_from_query(url="", query=prompt)
             return (
-                "Extracted flight information from search results:\n"
-                "1. IndiGo 6E-2412: Bangalore (BLR) to Hyderabad (HYD) - Price: ₹3,450 (Link: https://www.goindigo.in) - Departs 08:30, Duration 1h 15m.\n"
-                "2. Air India AI-512: Bangalore (BLR) to Hyderabad (HYD) - Price: ₹3,890 (Link: https://www.airindia.in) - Departs 14:15, Duration 1h 20m.\n"
-                "3. Akasa Air QP-1102: Bangalore (BLR) to Hyderabad (HYD) - Price: ₹3,120 (Link: https://www.akasaair.com) - Departs 21:00, Duration 1h 10m."
+                f"Extracted flight information from search results:\n"
+                f"1. IndiGo 6E-2412: {origin} ({origin_code}) to {destination} ({dest_code}) - Price: ₹12,450 (Link: https://www.goindigo.in) - Departs 08:30, Duration 1h 15m.\n"
+                f"2. Air India AI-512: {origin} ({origin_code}) to {destination} ({dest_code}) - Price: ₹15,890 (Link: https://www.airindia.in) - Departs 14:15, Duration 1h 20m.\n"
+                f"3. Akasa Air QP-1102: {origin} ({origin_code}) to {destination} ({dest_code}) - Price: ₹11,120 (Link: https://www.akasaair.com) - Departs 21:00, Duration 1h 10m."
             )
         elif "duckduckgo.com" in prompt_lower or "search" in prompt_lower:
             # Extract query from url or prompt
@@ -173,13 +175,15 @@ def call_mock_llm(prompt: str, system_prompt: str = None, json_mode: bool = Fals
                 "- **Scope**: Combines computer science, linguistics, mathematics, and engineering to build systems that automate cognitive tasks."
             )
         elif any(w in prompt_lower for w in ["flight", "ticket", "bangalore", "hyderabad"]):
+            from utils.helpers import extract_cities_from_query
+            origin, origin_code, destination, dest_code = extract_cities_from_query(url="", query=prompt)
             return (
-                "### ✈️ Cheapest Flights from Bangalore to Hyderabad\n\n"
-                "Here are the top flight options retrieved from the search results:\n\n"
-                "1. **Akasa Air (QP-1102)**: **₹3,120** (Cheapest option) - Departs at 21:00, 1h 10m duration. [Book on Akasa Air](https://www.akasaair.com)\n"
-                "2. **IndiGo (6E-2412)**: **₹3,450** - Departs at 08:30, 1h 15m duration. [Book on IndiGo](https://www.goindigo.in)\n"
-                "3. **Air India (AI-512)**: **₹3,890** - Departs at 14:15, 1h 20m duration. [Book on Air India](https://www.airindia.in)\n\n"
-                "All flights are direct. Prices are subject to availability."
+                f"### ✈️ Cheapest Flights from {origin} to {destination}\n\n"
+                f"Here are the top flight options retrieved from the search results:\n\n"
+                f"1. **Akasa Air (QP-1102)**: **₹11,120** (Cheapest option) - Departs at 21:00, 1h 10m duration. [Book on Akasa Air](https://www.akasaair.com)\n"
+                f"2. **IndiGo (6E-2412)**: **₹12,450** - Departs at 08:30, 1h 15m duration. [Book on IndiGo](https://www.goindigo.in)\n"
+                f"3. **Air India (AI-512)**: **₹15,890** - Departs at 14:15, 1h 20m duration. [Book on Air India](https://www.airindia.in)\n\n"
+                f"All flights are direct. Prices are subject to availability."
             )
         else:
             # Extract query

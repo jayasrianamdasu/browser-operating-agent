@@ -106,6 +106,80 @@ def load_history(logs_dir: str = None) -> list:
     history.sort(key=lambda x: x.get("timestamp", ""), reverse=True)
     return history
 
+
+def extract_cities_from_query(url: str, query: str = "") -> tuple:
+    """
+    Extracts origin and destination cities and their airport codes from a query or search URL.
+    Defaults to ('Bangalore', 'BLR', 'Hyderabad', 'HYD').
+    """
+    import urllib.parse
+    import re
+    
+    origin = "Bangalore"
+    origin_code = "BLR"
+    destination = "Hyderabad"
+    dest_code = "HYD"
+    
+    # 1. Extract query from URL if query is not provided
+    if not query and url:
+        try:
+            parsed_url = urllib.parse.urlparse(url)
+            params = urllib.parse.parse_qs(parsed_url.query)
+            if "q" in params:
+                query = params["q"][0]
+        except Exception:
+            pass
+            
+    if not query:
+        return origin, origin_code, destination, dest_code
+        
+    query_lower = query.lower()
+    
+    # Try regex match for "from <origin> to <destination>"
+    match = re.search(r"from\s+([a-zA-Z\s\-]+?)\s+to\s+([a-zA-Z\s\-]+)", query_lower)
+    if match:
+        origin_candidate = match.group(1).strip()
+        dest_candidate = match.group(2).strip()
+        
+        # Clean candidates of common trailing query noise
+        for stopword in [" and ", " show ", " list ", " with ", " for ", " next ", " this ", " cheapest "]:
+            if stopword in f" {dest_candidate} ":
+                dest_candidate = dest_candidate.split(stopword)[0].strip()
+            if stopword in f" {origin_candidate} ":
+                origin_candidate = origin_candidate.split(stopword)[0].strip()
+                
+        if origin_candidate:
+            origin = origin_candidate.title()
+            origin_code = "".join([w[0] for w in origin.split() if w])[:3].upper()
+            if len(origin_code) < 3:
+                origin_code = origin[:3].upper()
+                
+        if dest_candidate:
+            destination = dest_candidate.title()
+            dest_code = "".join([w[0] for w in destination.split() if w])[:3].upper()
+            if len(dest_code) < 3:
+                dest_code = destination[:3].upper()
+                
+    # Specific common overrides for airport codes to make it look premium
+    airport_overrides = {
+        "Bangalore": "BLR",
+        "Hyderabad": "HYD",
+        "San Francisco": "SFO",
+        "Tokyo": "NRT",
+        "Delhi": "DEL",
+        "New York": "JFK",
+        "London": "LHR",
+        "Singapore": "SIN",
+        "Paris": "CDG",
+    }
+    if origin in airport_overrides:
+        origin_code = airport_overrides[origin]
+    if destination in airport_overrides:
+        dest_code = airport_overrides[destination]
+        
+    return origin, origin_code, destination, dest_code
+
+
 def generate_mock_screenshot(url: str, action: str, path: str):
     """
     Generates a beautiful mock browser screenshot representing the current step.
@@ -178,16 +252,17 @@ def generate_mock_screenshot(url: str, action: str, path: str):
         
     elif "flight" in url_lower or "ticket" in url_lower or "bangalore" in url_lower or "hyderabad" in url_lower:
         # Flight search Layout
-        draw_text_safe((50, 100), "Cheapest Flights: Bangalore (BLR) to Hyderabad (HYD)", fill_color=text_primary)
+        origin, origin_code, destination, dest_code = extract_cities_from_query(url)
+        draw_text_safe((50, 100), f"Cheapest Flights: {origin} ({origin_code}) to {destination} ({dest_code})", fill_color=text_primary)
         
         draw.rectangle([50, 130, 1180, 320], outline=address_border, width=1)
-        draw_text_safe((70, 150), "Indigo 6E-2412  |  08:30 - 09:45  |  Direct  |  1h 15m  |  Price: INR 3,450", fill_color=text_primary)
+        draw_text_safe((70, 150), f"Indigo 6E-2412  |  08:30 - 09:45  |  Direct  |  1h 15m  |  Price: INR 12,450", fill_color=text_primary)
         draw_text_safe((70, 180), "Book Indigo flight ticket online...", fill_color=text_link)
         
-        draw_text_safe((70, 210), "Air India AI-512  |  14:15 - 15:35  |  Direct  |  1h 20m  |  Price: INR 3,890", fill_color=text_primary)
+        draw_text_safe((70, 210), f"Air India AI-512  |  14:15 - 15:35  |  Direct  |  1h 20m  |  Price: INR 15,890", fill_color=text_primary)
         draw_text_safe((70, 240), "Book Air India flight ticket online...", fill_color=text_link)
         
-        draw_text_safe((70, 270), "Akasa Air QP-1102  |  21:00 - 22:10  |  Direct  |  1h 10m  |  Price: INR 3,120", fill_color=text_primary)
+        draw_text_safe((70, 270), f"Akasa Air QP-1102  |  21:00 - 22:10  |  Direct  |  1h 10m  |  Price: INR 11,120", fill_color=text_primary)
         draw_text_safe((70, 300), "Book Akasa Air flight ticket online...", fill_color=text_link)
         
     elif "duckduckgo" in url_lower or "search" in action:
@@ -408,7 +483,8 @@ def get_mock_html(url: str, query: str = "", action: str = "") -> str:
 
     # 3. Flight Tickets Template
     elif any(w in query_lower or w in url_lower for w in ["flight", "ticket", "bangalore", "hyderabad"]):
-        return """<!DOCTYPE html>
+        origin, origin_code, destination, dest_code = extract_cities_from_query(url, query)
+        html_template = """<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
@@ -562,6 +638,7 @@ def get_mock_html(url: str, query: str = "", action: str = "") -> str:
   </div>
 </body>
 </html>"""
+        return html_template.replace("Bangalore", origin).replace("BLR", origin_code).replace("Hyderabad", destination).replace("HYD", dest_code).replace("3,120", "11,120").replace("3,450", "12,450").replace("3,890", "15,890")
 
     # 4. Search Results Template (DuckDuckGo style)
     elif "duckduckgo" in url_lower or action_lower == "search" or query_lower:
