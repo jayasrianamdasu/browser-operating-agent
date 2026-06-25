@@ -805,32 +805,83 @@ def get_mock_html(url: str, query: str = "", action: str = "") -> str:
                 
         # Generate dynamic slugs and details
         slug = re.sub(r'[^a-zA-Z0-9]+', '-', search_term.lower()).strip('-')
-        is_shopping = any(w in search_term.lower() for w in ["price", "cheap", "buy", "cost", "store", "sale", "cleanser", "cetaphil", "ticket", "hotel", "product"])
+        search_lower = search_term.lower()
         
-        if is_shopping:
-            res1_title = f"Buy {search_term.title()} at Best Prices Online"
-            res1_url = f"https://www.retail-deals.com/buy/{slug}"
-            res1_snippet = f"Compare prices for {search_term}. Find it in stock for $9.99 (8oz) and $14.50 (16oz). Free shipping on orders over $25. Read user ratings and discount coupons."
+        # Check for specific queries to provide high-fidelity realistic answers
+        if "paying skill" in search_lower or "computer science skill" in search_lower:
+            res1_title = "Top 10 Highest Paying Tech Skills in 2026"
+            res1_url = "https://www.techsalary-guide.com/highest-paying-skills-2026"
+            res1_snippet = "Discover the top paying skills: 1. Generative AI / Large Language Models (Average salary $185,000), 2. Cloud Architecture (AWS/Azure - Average $165,000), 3. Cybersecurity & Zero Trust (Average $160,000), 4. Data Engineering & Analytics (Average $155,000), and 5. DevOps & Infrastructure as Code (Average $150,000)."
             
-            res2_title = f"Cheapest {search_term.title()} Deals & Discounts"
-            res2_url = f"https://www.super-discount-hub.com/search?q={slug}"
-            res2_snippet = f"Get the best deals on {search_term}. Lowest price found online is $8.49 at Walmart, followed by $10.20 at Target. Compare pharmacy prices and save up to 40%."
+            res2_title = "The Most Demanded Computer Science Skills - Forbes"
+            res2_url = "https://www.forbes.com/business/tech-skills-in-demand"
+            res2_snippet = "Tech industries are paying top dollar for specialized skills. Machine Learning Engineers, Cloud Engineers, and Cybersecurity Experts remain at the top of the salary bracket, with senior roles easily clearing $200k in 2026."
             
-            res3_title = f"Top 10 Best {search_term.title()} Reviews and Store Locations"
-            res3_url = f"https://www.consumerguide.org/reviews/{slug}"
-            res3_snippet = f"Read verified buyer reviews for {search_term}. Check local pharmacy listings and stock status. Price ranges from $8.49 to $12.99 across major retailers."
+            res3_title = "GitHub - awesome-paying-skills: Salaries & Resources"
+            res3_url = "https://github.com/developer-salaries/awesome-paying-skills"
+            res3_snippet = "A curated database of salaries, interview guides, and certification courses for Generative AI, Cloud Infrastructure, Cyber Security, Data Engineering, and DevOps."
+        elif "headphone" in search_lower or "audio" in search_lower:
+            res1_title = "The Best Noise-Cancelling Headphones of 2026 - Reviews"
+            res1_url = "https://www.audiosound-guide.com/best-noise-cancelling-headphones"
+            res1_snippet = "We review the top headphones of the year: 1. Sony WH-1000XM6 (Outstanding ANC, 42h battery, $399), 2. Bose QuietComfort Ultra (Unmatched comfort, 24h battery, $429), and 3. Sennheiser Momentum 4 (Class-leading sound quality, 60h battery, $349)."
+            
+            res2_title = "Bose vs Sony vs Sennheiser: Which ANC Headphone is Best?"
+            res2_url = "https://www.soundwire-reviews.com/anc-headphone-showdown"
+            res2_snippet = "A direct head-to-head comparison. Sony's new WH-1000XM6 offers the best active noise cancellation and 42-hour battery life. Sennheiser leads in audiophile sound with 60-hour battery life, while Bose excels in comfort."
+            
+            res3_title = "Cheapest Deals on Premium ANC Headphones - TechRadar"
+            res3_url = "https://www.techradar.com/deals/headphones"
+            res3_snippet = "Find sales on the Sony XM6 ($379 at Amazon), Bose QC Ultra ($399 at Best Buy), and Sennheiser Momentum 4 ($299 at Walmart)."
+        elif "purifier" in search_lower:
+            res1_title = "Best Air Purifiers for Allergies & Pets in 2026"
+            res1_url = "https://www.homeair-ratings.com/best-air-purifiers-allergies"
+            res1_snippet = "The top air purifiers: 1. Coway Airmega 400S (Coverage 1560 sq ft, Dual HEPA, $499), 2. Blueair Blue Pure 211i Max (Coverage 600 sq ft, Whisper quiet, $349), and 3. Levoit Core 400S (Coverage 403 sq ft, Smart control, $219)."
+            
+            res2_title = "HEPA Air Purifiers: Ratings & Review Guide"
+            res2_url = "https://www.cleanair-consumer.org/hepa-purifier-ratings"
+            res2_snippet = "A comparison of True HEPA filters. Coway Airmega offers the best large-room coverage (1560 sq ft), while the Blueair Pure 211i Max is the most energy-efficient for medium rooms (600 sq ft)."
+            
+            res3_title = "Levoit vs Coway: Best Smart Air Purifiers"
+            res3_url = "https://www.smarthome-insider.com/purifier-comparison"
+            res3_snippet = "Comparison of app control and air quality sensors. The Levoit Core 400S ($219) is our top budget recommendation, while the Coway Airmega 400S ($499) excels in raw purification power."
+        elif "apple" in search_lower or "aapl" in search_lower:
+            res1_title = "Apple Inc. (AAPL) Stock Price Today & Real-Time Quote"
+            res1_url = "https://www.finance-marketwatch.com/stocks/aapl"
+            res1_snippet = "Real-time Apple stock quote: AAPL is currently trading at $182.50 (+1.25%). Today's High: $183.10, Today's Low: $181.40, Opening Price: $181.90. Volume: 52.4 million shares."
+            
+            res2_title = "Apple (AAPL) Stock Analysis & Wall Street Forecasts"
+            res2_url = "https://www.marketinsider-finance.com/news/aapl-stock"
+            res2_snippet = "AAPL closed at $182.50 today, showing strength after opening at $181.90. Analysts set a 12-month median target of $210, citing strong services revenue and upcoming hardware announcements."
+            
+            res3_title = "AAPL - Apple Inc. Shareholders & Earnings Reports"
+            res3_url = "https://www.sec-investments.com/ticker/aapl"
+            res3_snippet = "AAPL details: Market cap $2.85T, PE ratio 28.4, EPS $6.42. Today's trading range: $181.40 - $183.10."
         else:
-            res1_title = f"Complete Guide to {search_term.title()} - Official Overview"
-            res1_url = f"https://www.knowledgebase-hub.org/wiki/{slug}"
-            res1_snippet = f"Learn everything about {search_term}. Discover official documentation, tutorials, pricing details, and implementation roadmaps for beginners."
-            
-            res2_title = f"Latest News, Trends & Updates on {search_term.title()}"
-            res2_url = f"https://www.techtrends-daily.com/news/{slug}"
-            res2_snippet = f"Read the most recent articles and community announcements regarding {search_term}. Expert columns, comparison guides, and user reviews updated daily."
-            
-            res3_title = f"GitHub - community/awesome-{slug}: Curated list of resources"
-            res3_url = f"https://github.com/community/awesome-{slug}"
-            res3_snippet = f"A curated list of awesome tutorials, libraries, tools, and code repositories relating to {search_term}. Contribute to the roadmap and join the developer chat."
+            is_shopping = any(w in search_term.lower() for w in ["price", "cheap", "buy", "cost", "store", "sale", "cleanser", "cetaphil", "ticket", "hotel", "product"])
+            if is_shopping:
+                res1_title = f"Buy {search_term.title()} at Best Prices Online"
+                res1_url = f"https://www.retail-deals.com/buy/{slug}"
+                res1_snippet = f"Compare prices for {search_term}. Find it in stock for $9.99 (8oz) and $14.50 (16oz). Free shipping on orders over $25. Read user ratings and discount coupons."
+                
+                res2_title = f"Cheapest {search_term.title()} Deals & Discounts"
+                res2_url = f"https://www.super-discount-hub.com/search?q={slug}"
+                res2_snippet = f"Get the best deals on {search_term}. Lowest price found online is $8.49 at Walmart, followed by $10.20 at Target. Compare pharmacy prices and save up to 40%."
+                
+                res3_title = f"Top 10 Best {search_term.title()} Reviews and Store Locations"
+                res3_url = f"https://www.consumerguide.org/reviews/{slug}"
+                res3_snippet = f"Read verified buyer reviews for {search_term}. Check local pharmacy listings and stock status. Price ranges from $8.49 to $12.99 across major retailers."
+            else:
+                res1_title = f"Complete Guide to {search_term.title()} - Official Overview"
+                res1_url = f"https://www.knowledgebase-hub.org/wiki/{slug}"
+                res1_snippet = f"Learn everything about {search_term}. Discover official documentation, tutorials, pricing details, and implementation roadmaps for beginners."
+                
+                res2_title = f"Latest News, Trends & Updates on {search_term.title()}"
+                res2_url = f"https://www.techtrends-daily.com/news/{slug}"
+                res2_snippet = f"Read the most recent articles and community announcements regarding {search_term}. Expert columns, comparison guides, and user reviews updated daily."
+                
+                res3_title = f"GitHub - community/awesome-{slug}: Curated list of resources"
+                res3_url = f"https://github.com/community/awesome-{slug}"
+                res3_snippet = f"A curated list of awesome tutorials, libraries, tools, and code repositories relating to {search_term}. Contribute to the roadmap and join the developer chat."
             
         return f"""<!DOCTYPE html>
 <html>

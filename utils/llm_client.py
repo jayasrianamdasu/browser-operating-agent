@@ -142,13 +142,47 @@ def call_mock_llm(prompt: str, system_prompt: str = None, json_mode: bool = Fals
                 match = re.search(r"results for ([^'\"]+)", prompt_lower)
                 if match:
                     query = match.group(1).strip()
-                    
-            return (
-                f"Extracted DuckDuckGo results for query: '{query}':\n"
-                f"1. Top Result: Best guides and discussions for {query} (Link: https://example.com/search-result-1) - Detailed information on {query}.\n"
-                f"2. News update: Latest updates and releases for {query} (Link: https://example.com/search-result-2) - Industry reports for {query}.\n"
-                f"3. Community thread: Tips, tricks, and tutorials on {query} (Link: https://example.com/search-result-3) - Q&A on {query}."
-            )
+            
+            # Sub-routing for specific queries to provide high-fidelity answers
+            query_sub = query.lower()
+            if "paying skill" in query_sub or "computer science skill" in query_sub:
+                return (
+                    "Extracted Top Paying Skills in Computer Science for 2026:\n"
+                    "1. Generative AI / Large Language Models (Average Salary: $185,000)\n"
+                    "2. Cloud Architecture (AWS/Azure) (Average Salary: $165,000)\n"
+                    "3. Cybersecurity & Zero Trust (Average Salary: $160,000)\n"
+                    "4. Data Engineering & Analytics (Average Salary: $155,000)\n"
+                    "5. DevOps & Infrastructure as Code (Average Salary: $150,000)"
+                )
+            elif "headphone" in query_sub or "audio" in query_sub:
+                return (
+                    "Extracted Noise-Cancelling Headphones details:\n"
+                    "1. Sony WH-1000XM6 - Active Noise Cancellation: Outstanding, Battery Life: 42 hours, Price: $399\n"
+                    "2. Bose QuietComfort Ultra - Active Noise Cancellation: Unmatched comfort, Battery Life: 24 hours, Price: $429\n"
+                    "3. Sennheiser Momentum 4 - Active Noise Cancellation: Class-leading sound, Battery Life: 60 hours, Price: $349"
+                )
+            elif "purifier" in query_sub:
+                return (
+                    "Extracted HEPA Air Purifiers details:\n"
+                    "1. Coway Airmega 400S - Room Coverage: 1560 sq ft, Filtration: True HEPA, Price: $499\n"
+                    "2. Blueair Blue Pure 211i Max - Room Coverage: 600 sq ft, Filtration: Quiet HEPA, Price: $349\n"
+                    "3. Levoit Core 400S - Room Coverage: 403 sq ft, Filtration: Smart HEPA, Price: $219"
+                )
+            elif "apple" in query_sub or "aapl" in query_sub:
+                return (
+                    "Extracted Apple Inc. (AAPL) stock info:\n"
+                    "- Current Price: $182.50\n"
+                    "- Today's High: $183.10\n"
+                    "- Today's Low: $181.40\n"
+                    "- Opening Price: $181.90"
+                )
+            else:
+                return (
+                    f"Extracted DuckDuckGo results for query: '{query}':\n"
+                    f"1. Top Result: Best guides and discussions for {query} (Link: https://example.com/search-result-1) - Detailed information on {query}.\n"
+                    f"2. News update: Latest updates and releases for {query} (Link: https://example.com/search-result-2) - Industry reports for {query}.\n"
+                    f"3. Community thread: Tips, tricks, and tutorials on {query} (Link: https://example.com/search-result-3) - Q&A on {query}."
+                )
         else:
             return (
                 "Extracted content from Example Domain:\n"
@@ -199,14 +233,53 @@ def call_mock_llm(prompt: str, system_prompt: str = None, json_mode: bool = Fals
                 match = re.search(r"results for ([^'\"]+)", prompt_lower)
                 if match:
                     query = match.group(1).strip()
-            return (
-                f"### 🔍 Search Summary for '{query}'\n\n"
-                f"I have successfully searched DuckDuckGo for **'{query}'** and analyzed the results:\n\n"
-                f"* **Top Guide**: Displays high engagement details regarding **{query}**. [View Guide](https://example.com/search-result-1)\n"
-                f"* **News & Releases**: Documents recent product highlights and community discussions concerning **{query}**. [View News](https://example.com/search-result-2)\n"
-                f"* **Tips & Tutorials**: Useful community troubleshooting and code references for **{query}**. [View Community](https://example.com/search-result-3)\n\n"
-                f"The overall search results demonstrate active developer interest and a wide range of learning resources available for **{query}**."
-            )
+            
+            # Sub-routing for specific queries to provide high-fidelity answers
+            query_sub = query.lower()
+            if "paying skill" in query_sub or "computer science skill" in query_sub:
+                return (
+                    "### 📈 Top-Paying Skills in Computer Science for 2026\n\n"
+                    "Based on recent technology salary research, here are the top 5 highest-paying computer science skills:\n\n"
+                    "1. **Generative AI / Large Language Models**: **$185,000** average salary. Driven by massive demand for custom AI agents and model integrations.\n"
+                    "2. **Cloud Architecture (AWS/Azure)**: **$165,000** average salary. Focuses on multi-cloud orchestration and cost optimization.\n"
+                    "3. **Cybersecurity & Zero Trust**: **$160,000** average salary. Essential for safeguarding enterprise networks in decentralized systems.\n"
+                    "4. **Data Engineering & Analytics**: **$155,000** average salary. Centered around pipeline scaling and real-time processing.\n"
+                    "5. **DevOps & Infrastructure as Code**: **$150,000** average salary. Driven by automated deployment and CI/CD operations."
+                )
+            elif "headphone" in query_sub or "audio" in query_sub:
+                return (
+                    "### 🎧 Best Noise-Cancelling Headphones of 2026\n\n"
+                    "Here are the top-rated ANC headphones based on battery life, noise cancellation, and price:\n\n"
+                    "1. **Sony WH-1000XM6**: **$399** - Outstanding ANC, **42-hour** battery life. [Buy on Amazon](https://example.com)\n"
+                    "2. **Bose QuietComfort Ultra**: **$429** - Unmatched comfort, **24-hour** battery life. [Buy on Best Buy](https://example.com)\n"
+                    "3. **Sennheiser Momentum 4**: **$349** - Class-leading sound quality, **60-hour** battery life (best battery). [Buy on Walmart](https://example.com)"
+                )
+            elif "purifier" in query_sub:
+                return (
+                    "### 🍃 Best HEPA Air Purifiers for Allergies & Pets\n\n"
+                    "Here is a summary of the top-rated air purifiers based on square footage and price:\n\n"
+                    "1. **Coway Airmega 400S**: **$499** - Covers up to **1,560 sq ft** (Best for large rooms). [Check Coway](https://example.com)\n"
+                    "2. **Blueair Blue Pure 211i Max**: **$349** - Covers up to **600 sq ft** (Whisper-quiet operations). [Check Blueair](https://example.com)\n"
+                    "3. **Levoit Core 400S**: **$219** - Covers up to **403 sq ft** (Top smart app budget pick). [Check Levoit](https://example.com)"
+                )
+            elif "apple" in query_sub or "aapl" in query_sub:
+                return (
+                    "### 📊 Apple Inc. (AAPL) Stock Report\n\n"
+                    "Here is the real-time stock quote for Apple Inc. (AAPL):\n\n"
+                    "* **Current Price**: **$182.50** (+1.25%)\n"
+                    "* **Opening Price**: **$181.90**\n"
+                    "* **Daily Range**: **$181.40 - $183.10**\n\n"
+                    "AAPL showed steady gains today following robust service revenue reports and high trading volume."
+                )
+            else:
+                return (
+                    f"### 🔍 Search Summary for '{query}'\n\n"
+                    f"I have successfully searched DuckDuckGo for **'{query}'** and analyzed the results:\n\n"
+                    f"* **Top Guide**: Displays high engagement details regarding **{query}**. [View Guide](https://example.com/search-result-1)\n"
+                    f"* **News & Releases**: Documents recent product highlights and community discussions concerning **{query}**. [View News](https://example.com/search-result-2)\n"
+                    f"* **Tips & Tutorials**: Useful community troubleshooting and code references for **{query}**. [View Community](https://example.com/search-result-3)\n\n"
+                    f"The overall search results demonstrate active developer interest and a wide range of learning resources available for **{query}**."
+                )
     
     # Generic mock response if none matched
     if json_mode:
