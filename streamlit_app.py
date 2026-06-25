@@ -11,9 +11,7 @@ import logging
 import streamlit as st
 from PIL import Image
 
-# Import nest_asyncio to avoid event loop conflicts in Streamlit when executing Playwright async
-import nest_asyncio
-nest_asyncio.apply()
+# nest_asyncio removed to avoid conflicts with AnyIO/Starlette on Python 3.14+
 
 # Configure logging
 logging.basicConfig(
@@ -298,8 +296,31 @@ with tab1:
             extraction_placeholder = extraction_expander.empty()
             extraction_placeholder.info("Waiting for Extractor Agent to parse page contents...")
                 
-            # Run using the Streamlit event loop compatibility layer
-            asyncio.run(
+            # Run the async pipeline in a separate thread to avoid AnyIO / nest_asyncio event loop conflicts under Python 3.14+
+            import threading
+            
+            def run_async_in_thread(coro):
+                result = []
+                exception = []
+                def target():
+                    loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(loop)
+                    try:
+                        res = loop.run_until_complete(coro)
+                        result.append(res)
+                    except Exception as e:
+                        exception.append(e)
+                    finally:
+                        loop.close()
+                
+                thread = threading.Thread(target=target)
+                thread.start()
+                thread.join()
+                if exception:
+                    raise exception[0]
+                return result[0] if result else None
+
+            run_async_in_thread(
                 run_pipeline(
                     task_prompt=task_input,
                     api_key=groq_key,

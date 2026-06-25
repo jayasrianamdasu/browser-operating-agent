@@ -2,6 +2,5 @@ streamlit
 playwright
 groq
 python-dotenv
-nest_asyncio
 beautifulsoup4
 Pillow
