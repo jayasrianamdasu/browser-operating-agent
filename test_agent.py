@@ -20,7 +20,7 @@ async def main():
     planner = PlannerAgent(use_mock=True)
     extractor = ExtractorAgent(use_mock=True)
     summarizer = SummarizerAgent(use_mock=True)
-    browser = BrowserAgent(headless=True)
+    browser = BrowserAgent(headless=True, use_mock=True)
     
     task = "Search Hacker News for GPT-5 and summarize the top stories"
     print(f"2. Input task: '{task}'")

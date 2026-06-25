@@ -1,4 +1,11 @@
+import sys
 import os
+# Add both the script directory and the parent directory to Python's import search path
+# We insert the parent directory first and the script directory second, so that the script directory takes top priority (index 0)
+script_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.dirname(script_dir))
+sys.path.insert(0, script_dir)
+
 import asyncio
 import logging
 import streamlit as st
@@ -154,8 +161,9 @@ async def run_pipeline(task_prompt: str, api_key: str, model_name: str, use_mock
         return
 
     # Render plan in the UI
+    plan_placeholder.empty()
     with plan_expander:
-        st.write("### Generated Execution Plan")
+        st.write("#### Steps to Execute")
         for idx, step in enumerate(plan):
             st.markdown(f"**Step {idx+1}:** {step.get('action').upper()} | {step}")
             
@@ -183,7 +191,6 @@ async def run_pipeline(task_prompt: str, api_key: str, model_name: str, use_mock
                 try:
                     img = Image.open(res["screenshot_path"])
                     with screenshot_container.container():
-                        st.write(f"### Live Screenshot - Step {step_num} ({action.upper()})")
                         st.image(img, use_container_width=True)
                 except Exception as ss_load_err:
                     logger.error(f"Could not load screenshot in UI: {ss_load_err}")
@@ -205,8 +212,9 @@ async def run_pipeline(task_prompt: str, api_key: str, model_name: str, use_mock
                 # Append to extraction accumulator
                 accumulated_extraction += f"\n--- EXTRACTION FROM {current_url} (Target: {target}) ---\n{extracted_text}\n"
                 
+                extraction_placeholder.empty()
                 with extraction_expander:
-                    st.write(f"#### Extraction from Step {step_num} ({current_url})")
+                    st.write(f"**Extraction from Step {step_num} ({current_url})**")
                     st.markdown(extracted_text)
 
         # 3. Summarizer Agent
@@ -270,14 +278,25 @@ with tab1:
         else:
             # Layout containers for execution
             status_container = st.empty()
-            plan_expander = st.expander("Show Execution Plan", expanded=True)
-            extraction_expander = st.expander("Show Extracted Web Content", expanded=True)
             
+            # Pre-render columns to stabilize height and avoid UI jumping/shaking
             col1, col2 = st.columns([1, 1])
             with col1:
+                st.markdown("### 📸 Live Browser Screenshot")
                 screenshot_container = st.empty()
+                screenshot_container.info("Waiting for browser action...")
             with col2:
+                st.markdown("### 📄 Final Answer Summary")
                 summary_container = st.empty()
+                summary_container.info("Waiting for agent to summarize...")
+
+            plan_expander = st.expander("📝 Show Execution Plan", expanded=True)
+            plan_placeholder = plan_expander.empty()
+            plan_placeholder.info("Waiting for Planner Agent to generate steps...")
+            
+            extraction_expander = st.expander("🔍 Show Extracted Web Content", expanded=True)
+            extraction_placeholder = extraction_expander.empty()
+            extraction_placeholder.info("Waiting for Extractor Agent to parse page contents...")
                 
             # Run using the Streamlit event loop compatibility layer
             asyncio.run(
