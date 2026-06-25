@@ -58,7 +58,8 @@ def call_mock_llm(prompt: str, system_prompt: str = None, json_mode: bool = Fals
     system_lower = (system_prompt or "").lower()
     
     # 1. Determine if this is a Planner request
-    is_planner = "planner" in system_lower or "plan" in system_lower or "list of steps" in prompt_lower
+    # Use "planner" instead of "plan" to avoid matching "meta-explanations" in the Extractor's system prompt
+    is_planner = "planner" in system_lower or "list of steps" in prompt_lower
     
     # 2. Determine if this is an Extractor request
     is_extractor = "extractor" in system_lower or "extract" in system_lower or "page content" in prompt_lower or "raw html" in prompt_lower
