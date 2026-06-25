@@ -208,6 +208,88 @@ def extract_cities_from_query(url: str, query: str = "") -> tuple:
     return origin, origin_code, destination, dest_code
 
 
+def generate_random_flights(origin_code: str, dest_code: str, query: str) -> list:
+    """
+    Generates a deterministic list of 3 mock flights based on the query.
+    """
+    import hashlib
+    import random
+    
+    query_lower = (query or "").lower()
+    seed_val = int(hashlib.md5(query_lower.encode('utf-8')).hexdigest(), 16)
+    
+    # Save current random state and restore it later to avoid side effects
+    state = random.getstate()
+    random.seed(seed_val)
+    
+    intl_airlines = [
+        ("United Airlines", "UA"),
+        ("Delta Air Lines", "DL"),
+        ("Japan Airlines", "JL"),
+        ("ANA Flights", "NH"),
+        ("Singapore Airlines", "SQ"),
+        ("Emirates", "EK"),
+        ("British Airways", "BA"),
+        ("Lufthansa", "LH")
+    ]
+    domestic_airlines = [
+        ("IndiGo", "6E"),
+        ("Air India", "AI"),
+        ("Akasa Air", "QP"),
+        ("SpiceJet", "SG"),
+        ("Vistara", "UK")
+    ]
+    
+    is_intl = any(c in ["SFO", "NRT", "JFK", "LHR", "SIN", "CDG"] for c in [origin_code, dest_code]) or \
+              any(w in query_lower for w in ["tokyo", "london", "singapore", "paris", "francisco", "york", "international", "japan", "england", "uk", "usa"])
+              
+    airline_pool = intl_airlines if is_intl else domestic_airlines
+    
+    flights = []
+    # Make sure we don't sample more than available pool size
+    sample_size = min(3, len(airline_pool))
+    selected_airlines = random.sample(airline_pool, sample_size)
+    
+    # Pad selected airlines if not enough
+    while len(selected_airlines) < 3:
+        selected_airlines.append(random.choice(airline_pool))
+    
+    for idx, (airline, code) in enumerate(selected_airlines):
+        flight_num = f"{code}-{random.randint(100, 999)}"
+        
+        # Departure/arrival times
+        dep_hour = random.randint(5, 22)
+        dep_min = random.choice([0, 15, 30, 45])
+        dep_time = f"{dep_hour:02d}:{dep_min:02d}"
+        
+        # Duration & Arrival
+        dur_hours = random.randint(8, 16) if is_intl else random.randint(1, 3)
+        dur_mins = random.choice([0, 15, 30, 45])
+        dur_str = f"{dur_hours}h {dur_mins}m"
+        
+        arr_hour = (dep_hour + dur_hours) % 24
+        arr_min = (dep_min + dur_mins) % 60
+        arr_time = f"{arr_hour:02d}:{arr_min:02d}"
+        
+        # Price
+        if is_intl:
+            price = f"USD {random.randint(450, 1250)}"
+        else:
+            price = f"INR {random.randint(3100, 7900):,}"
+            
+        flights.append({
+            "airline": airline,
+            "flight_num": flight_num,
+            "dep_time": dep_time,
+            "arr_time": arr_time,
+            "duration": dur_str,
+            "price": price
+        })
+        
+    random.setstate(state)
+    return flights
+
+
 def generate_mock_screenshot(url: str, action: str, path: str):
     """
     Generates a beautiful mock browser screenshot representing the current step.
@@ -281,17 +363,20 @@ def generate_mock_screenshot(url: str, action: str, path: str):
     elif "flight" in url_lower or "ticket" in url_lower or "bangalore" in url_lower or "hyderabad" in url_lower:
         # Flight search Layout
         origin, origin_code, destination, dest_code = extract_cities_from_query(url)
+        flights = generate_random_flights(origin_code, dest_code, url)
+        
         draw_text_safe((50, 100), f"Cheapest Flights: {origin} ({origin_code}) to {destination} ({dest_code})", fill_color=text_primary)
         
         draw.rectangle([50, 130, 1180, 320], outline=address_border, width=1)
-        draw_text_safe((70, 150), f"Indigo 6E-2412  |  08:30 - 09:45  |  Direct  |  1h 15m  |  Price: INR 12,450", fill_color=text_primary)
-        draw_text_safe((70, 180), "Book Indigo flight ticket online...", fill_color=text_link)
+        f1, f2, f3 = flights[0], flights[1], flights[2]
+        draw_text_safe((70, 150), f"{f1['airline']} {f1['flight_num']}  |  {f1['dep_time']} - {f1['arr_time']}  |  Direct  |  {f1['duration']}  |  Price: {f1['price']}", fill_color=text_primary)
+        draw_text_safe((70, 180), f"Book {f1['airline']} flight ticket online...", fill_color=text_link)
         
-        draw_text_safe((70, 210), f"Air India AI-512  |  14:15 - 15:35  |  Direct  |  1h 20m  |  Price: INR 15,890", fill_color=text_primary)
-        draw_text_safe((70, 240), "Book Air India flight ticket online...", fill_color=text_link)
+        draw_text_safe((70, 210), f"{f2['airline']} {f2['flight_num']}  |  {f2['dep_time']} - {f2['arr_time']}  |  Direct  |  {f2['duration']}  |  Price: {f2['price']}", fill_color=text_primary)
+        draw_text_safe((70, 240), f"Book {f2['airline']} flight ticket online...", fill_color=text_link)
         
-        draw_text_safe((70, 270), f"Akasa Air QP-1102  |  21:00 - 22:10  |  Direct  |  1h 10m  |  Price: INR 11,120", fill_color=text_primary)
-        draw_text_safe((70, 300), "Book Akasa Air flight ticket online...", fill_color=text_link)
+        draw_text_safe((70, 270), f"{f3['airline']} {f3['flight_num']}  |  {f3['dep_time']} - {f3['arr_time']}  |  Direct  |  {f3['duration']}  |  Price: {f3['price']}", fill_color=text_primary)
+        draw_text_safe((70, 300), f"Book {f3['airline']} flight ticket online...", fill_color=text_link)
         
     elif "duckduckgo" in url_lower or "search" in action:
         # Generic DuckDuckGo layout
@@ -512,6 +597,9 @@ def get_mock_html(url: str, query: str = "", action: str = "") -> str:
     # 3. Flight Tickets Template
     elif any(w in query_lower or w in url_lower for w in ["flight", "ticket", "bangalore", "hyderabad"]):
         origin, origin_code, destination, dest_code = extract_cities_from_query(url, query)
+        flights = generate_random_flights(origin_code, dest_code, query or url)
+        f1, f2, f3 = flights[0], flights[1], flights[2]
+        
         html_template = """<!DOCTYPE html>
 <html>
 <head>
@@ -666,7 +754,45 @@ def get_mock_html(url: str, query: str = "", action: str = "") -> str:
   </div>
 </body>
 </html>"""
-        return html_template.replace("Bangalore", origin).replace("BLR", origin_code).replace("Hyderabad", destination).replace("HYD", dest_code).replace("3,120", "11,120").replace("3,450", "12,450").replace("3,890", "15,890")
+        return html_template.replace(
+            "Bangalore", origin
+        ).replace(
+            "BLR", origin_code
+        ).replace(
+            "Hyderabad", destination
+        ).replace(
+            "HYD", dest_code
+        ).replace(
+            "Akasa Air", f1["airline"]
+        ).replace(
+            "QP-1102", f1["flight_num"]
+        ).replace(
+            "21:00 - 22:10", f1["dep_time"] + " - " + f1["arr_time"]
+        ).replace(
+            "1h 10m", f1["duration"]
+        ).replace(
+            "INR 3,120", f1["price"]
+        ).replace(
+            "IndiGo", f2["airline"]
+        ).replace(
+            "6E-2412", f2["flight_num"]
+        ).replace(
+            "08:30 - 09:45", f2["dep_time"] + " - " + f2["arr_time"]
+        ).replace(
+            "1h 15m", f2["duration"]
+        ).replace(
+            "INR 3,450", f2["price"]
+        ).replace(
+            "Air India", f3["airline"]
+        ).replace(
+            "AI-512", f3["flight_num"]
+        ).replace(
+            "14:15 - 15:35", f3["dep_time"] + " - " + f3["arr_time"]
+        ).replace(
+            "1h 20m", f3["duration"]
+        ).replace(
+            "INR 3,890", f3["price"]
+        )
 
     # 4. Search Results Template (DuckDuckGo style)
     elif "duckduckgo" in url_lower or action_lower == "search" or query_lower:

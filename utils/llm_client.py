@@ -122,13 +122,15 @@ def call_mock_llm(prompt: str, system_prompt: str = None, json_mode: bool = Fals
                 "recommendation systems, understanding human speech, self-driving cars, generative tools, and competing at the highest level in strategic games."
             )
         elif any(w in prompt_lower for w in ["flight", "ticket", "bangalore", "hyderabad"]):
-            from utils.helpers import extract_cities_from_query
+            from utils.helpers import extract_cities_from_query, generate_random_flights
             origin, origin_code, destination, dest_code = extract_cities_from_query(url="", query=prompt)
+            flights = generate_random_flights(origin_code, dest_code, query=prompt)
+            f1, f2, f3 = flights[0], flights[1], flights[2]
             return (
                 f"Extracted flight information from search results:\n"
-                f"1. IndiGo 6E-2412: {origin} ({origin_code}) to {destination} ({dest_code}) - Price: ₹12,450 (Link: https://www.goindigo.in) - Departs 08:30, Duration 1h 15m.\n"
-                f"2. Air India AI-512: {origin} ({origin_code}) to {destination} ({dest_code}) - Price: ₹15,890 (Link: https://www.airindia.in) - Departs 14:15, Duration 1h 20m.\n"
-                f"3. Akasa Air QP-1102: {origin} ({origin_code}) to {destination} ({dest_code}) - Price: ₹11,120 (Link: https://www.akasaair.com) - Departs 21:00, Duration 1h 10m."
+                f"1. {f1['airline']} {f1['flight_num']}: {origin} ({origin_code}) to {destination} ({dest_code}) - Price: {f1['price']} (Link: https://example.com/book) - Departs {f1['dep_time']}, Duration {f1['duration']}.\n"
+                f"2. {f2['airline']} {f2['flight_num']}: {origin} ({origin_code}) to {destination} ({dest_code}) - Price: {f2['price']} (Link: https://example.com/book) - Departs {f2['dep_time']}, Duration {f2['duration']}.\n"
+                f"3. {f3['airline']} {f3['flight_num']}: {origin} ({origin_code}) to {destination} ({dest_code}) - Price: {f3['price']} (Link: https://example.com/book) - Departs {f3['dep_time']}, Duration {f3['duration']}."
             )
         elif "duckduckgo.com" in prompt_lower or "search" in prompt_lower:
             # Extract query from url or prompt
@@ -175,14 +177,16 @@ def call_mock_llm(prompt: str, system_prompt: str = None, json_mode: bool = Fals
                 "- **Scope**: Combines computer science, linguistics, mathematics, and engineering to build systems that automate cognitive tasks."
             )
         elif any(w in prompt_lower for w in ["flight", "ticket", "bangalore", "hyderabad"]):
-            from utils.helpers import extract_cities_from_query
+            from utils.helpers import extract_cities_from_query, generate_random_flights
             origin, origin_code, destination, dest_code = extract_cities_from_query(url="", query=prompt)
+            flights = generate_random_flights(origin_code, dest_code, query=prompt)
+            f1, f2, f3 = flights[0], flights[1], flights[2]
             return (
                 f"### ✈️ Cheapest Flights from {origin} to {destination}\n\n"
                 f"Here are the top flight options retrieved from the search results:\n\n"
-                f"1. **Akasa Air (QP-1102)**: **₹11,120** (Cheapest option) - Departs at 21:00, 1h 10m duration. [Book on Akasa Air](https://www.akasaair.com)\n"
-                f"2. **IndiGo (6E-2412)**: **₹12,450** - Departs at 08:30, 1h 15m duration. [Book on IndiGo](https://www.goindigo.in)\n"
-                f"3. **Air India (AI-512)**: **₹15,890** - Departs at 14:15, 1h 20m duration. [Book on Air India](https://www.airindia.in)\n\n"
+                f"1. **{f1['airline']} ({f1['flight_num']})**: **{f1['price']}** (Cheapest option) - Departs at {f1['dep_time']}, {f1['duration']} duration. [Book flight](https://example.com/book)\n"
+                f"2. **{f2['airline']} ({f2['flight_num']})**: **{f2['price']}** - Departs at {f2['dep_time']}, {f2['duration']} duration. [Book flight](https://example.com/book)\n"
+                f"3. **{f3['airline']} ({f3['flight_num']})**: **{f3['price']}** - Departs at {f3['dep_time']}, {f3['duration']} duration. [Book flight](https://example.com/book)\n\n"
                 f"All flights are direct. Prices are subject to availability."
             )
         else:
