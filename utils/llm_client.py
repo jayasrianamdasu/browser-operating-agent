@@ -77,13 +77,22 @@ def call_mock_llm(prompt: str, system_prompt: str = None, json_mode: bool = Fals
                 ]
             }
         elif "wikipedia" in prompt_lower:
+            topic = "Artificial Intelligence"
+            match = re.search(r"(?:page for|search for|find|about|on)\s+['\"]?([a-zA-Z0-9\s]+?)['\"]?(?:\s+on\s+wikipedia|\s+page|\.org|\s*$)", prompt_lower)
+            if match:
+                topic = match.group(1).strip().title()
+            else:
+                words = [w for w in prompt.split() if w.lower() not in ["go", "to", "wikipedia", "wikipedia.org", "and", "find", "the", "page", "for", "search"]]
+                if words:
+                    topic = " ".join(words).title()
+                    
             plan = {
                 "plan": [
                     {"action": "navigate", "url": "https://en.wikipedia.org/wiki/Main_Page"},
-                    {"action": "type", "selector": "input[name='search']", "text": "Artificial Intelligence"},
+                    {"action": "type", "selector": "input[name='search']", "text": topic},
                     {"action": "click", "selector": "input[name='go'], button:has-text('Search'), input[type='submit']"},
                     {"action": "wait", "seconds": 2},
-                    {"action": "extract", "target": "summary paragraph"}
+                    {"action": "extract", "target": f"wikipedia article intro for {topic}"}
                 ]
             }
         else:

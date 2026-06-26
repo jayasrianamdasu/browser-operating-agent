@@ -15,6 +15,7 @@ class BrowserAgent:
         self.browser = None
         self.context = None
         self.page = None
+        self.last_typed_text = ""
 
     async def start(self, proxy: dict = None):
         """
@@ -278,6 +279,7 @@ class BrowserAgent:
             elif action == "type":
                 selector = step.get("selector", "")
                 text = step.get("text", "")
+                self.last_typed_text = text
                 logger.info(f"Typing '{text}' into selector '{selector}'...")
                 try:
                     await self.page.fill(selector, text, timeout=5000)
@@ -325,9 +327,10 @@ class BrowserAgent:
                         from utils.helpers import get_mock_html
                         target_url = "https://example.com"
                         current_url = self.page.url.lower() if self.page else ""
-                        if "wikipedia" in selector.lower() or "wikipedia" in query.lower() or "wikipedia" in current_url:
+                        last_typed = getattr(self, "last_typed_text", "").lower()
+                        if "wikipedia" in selector.lower() or "wikipedia" in query.lower() or "wikipedia" in current_url or "wikipedia" in last_typed:
                             topic = "Artificial_intelligence"
-                            if "python" in selector.lower() or "python" in query.lower() or "python" in current_url:
+                            if "python" in selector.lower() or "python" in query.lower() or "python" in current_url or "python" in last_typed:
                                 topic = "Python"
                             target_url = f"https://en.wikipedia.org/wiki/{topic}"
                         elif "hacker news" in selector.lower() or "hn" in selector.lower() or "ycombinator" in current_url:

@@ -78,12 +78,21 @@ class PlannerAgent:
             # Fallback simple plan based on keywords
             task_lower = task.lower()
             if "wikipedia" in task_lower:
+                topic = "Artificial Intelligence"
+                match = re.search(r"(?:page for|search for|find|about|on)\s+['\"]?([a-zA-Z0-9\s]+?)['\"]?(?:\s+on\s+wikipedia|\s+page|\.org|\s*$)", task_lower)
+                if match:
+                    topic = match.group(1).strip().title()
+                else:
+                    words = [w for w in task.split() if w.lower() not in ["go", "to", "wikipedia", "wikipedia.org", "and", "find", "the", "page", "for", "search"]]
+                    if words:
+                        topic = " ".join(words).title()
+                        
                 return [
                     {"action": "navigate", "url": "https://en.wikipedia.org/wiki/Main_Page"},
-                    {"action": "type", "selector": "input[name='search']", "text": "Artificial Intelligence"},
+                    {"action": "type", "selector": "input[name='search']", "text": topic},
                     {"action": "click", "selector": "button:has-text('Search'), input[type='submit']"},
                     {"action": "wait", "seconds": 2},
-                    {"action": "extract", "target": "wikipedia article intro"}
+                    {"action": "extract", "target": f"wikipedia article intro for {topic}"}
                 ]
             elif "hacker news" in task_lower or "ycombinator" in task_lower or "hn" in task_lower:
                 return [
