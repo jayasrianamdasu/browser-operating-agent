@@ -324,9 +324,10 @@ class BrowserAgent:
                         # Fall back to rendering matching mock target page to prevent crashes
                         from utils.helpers import get_mock_html
                         target_url = "https://example.com"
-                        if "wikipedia" in selector.lower() or "wikipedia" in query.lower():
+                        current_url = self.page.url.lower() if self.page else ""
+                        if "wikipedia" in selector.lower() or "wikipedia" in query.lower() or "wikipedia" in current_url:
                             target_url = "https://en.wikipedia.org/wiki/Artificial_intelligence"
-                        elif "hacker news" in selector.lower() or "hn" in selector.lower():
+                        elif "hacker news" in selector.lower() or "hn" in selector.lower() or "ycombinator" in current_url:
                             target_url = "https://news.ycombinator.com"
                         
                         html_content = get_mock_html(target_url, query, "navigate")
