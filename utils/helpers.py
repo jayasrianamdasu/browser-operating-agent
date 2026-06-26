@@ -901,10 +901,23 @@ def get_mock_html(url: str, query: str = "", action: str = "") -> str:
     elif "wikipedia.org" in url_lower or "wikipedia" in query_lower or "wikipedia" in url_lower:
         # Extract title from URL if possible, e.g. /wiki/Artificial_intelligence
         title = "Artificial intelligence"
-        match = re.search(r"/wiki/([^/]+)", url)
+        match = re.search(r"/wiki/([^/&#?]+)", url)
         if match:
             title = urllib.parse.unquote(match.group(1)).replace("_", " ")
-        
+            if title.lower() in ["main page", "special:search", "search"]:
+                title = "Python (programming language)"
+                
+        # Clean title if it contains search query parameters
+        if "q=" in title.lower() or "search=" in title.lower():
+            title = "Python (programming language)"
+            
+        if "python" in title.lower():
+            p1 = "<b>Python</b> is a high-level, general-purpose programming language. Its design philosophy emphasizes code readability with the use of significant indentation. Python is dynamically typed and garbage-collected. It supports multiple programming paradigms, including structured, object-oriented, and functional programming."
+            p2 = "It was created by Guido van Rossum and first released in 1991. The Python Software Foundation manages and directs resources for Python development. It is widely used in data science, machine learning, web development, and scripting."
+        else:
+            p1 = f"<b>{title}</b> is intelligence—perceiving, synthesizing, and inferring information—demonstrated by machines, as opposed to intelligence displayed by non-human animals and humans. Example applications include advanced web search engines, recommendation systems, understanding human speech, self-driving cars, generative tools, and competing at the highest level in strategic games."
+            p2 = "As a field of study, AI combines computer science, mathematics, statistics, cognitive science, and philosophy. The field was founded on the assumption that human intelligence can be so precisely described that a machine can be made to simulate it. This raised philosophical arguments about the mind and the ethical consequences of creating artificial beings."
+
         return f"""<!DOCTYPE html>
 <html>
 <head>
@@ -975,10 +988,10 @@ def get_mock_html(url: str, query: str = "", action: str = "") -> str:
     <h1 class="wiki-title">{title}</h1>
     <div class="wiki-subtitle">From Wikipedia, the free encyclopedia</div>
     <p class="wiki-p">
-      <b>{title}</b> is intelligence—perceiving, synthesizing, and inferring information—demonstrated by machines, as opposed to intelligence displayed by non-human animals and humans. Example applications include advanced web search engines, recommendation systems, understanding human speech, self-driving cars, generative tools, and competing at the highest level in strategic games.
+      {p1}
     </p>
     <p class="wiki-p">
-      As a field of study, AI combines computer science, mathematics, statistics, cognitive science, and philosophy. The field was founded on the assumption that human intelligence can be so precisely described that a machine can be made to simulate it. This raised philosophical arguments about the mind and the ethical consequences of creating artificial beings.
+      {p2}
     </p>
   </div>
 </body>

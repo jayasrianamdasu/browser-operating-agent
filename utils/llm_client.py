@@ -115,6 +115,12 @@ def call_mock_llm(prompt: str, system_prompt: str = None, json_mode: bool = Fals
                 "3. The Future of Web Automation and Playwright (Link: https://news.ycombinator.com/item?id=45189211) - 95 points by user 'browserdev'"
             )
         elif "wikipedia.org" in prompt_lower or "wikipedia" in prompt_lower:
+            if "python" in prompt_lower:
+                return (
+                    "Extracted content from Wikipedia:\n"
+                    "Python is a high-level, general-purpose programming language. Its design philosophy emphasizes code readability with the use of significant indentation. "
+                    "Python is dynamically typed and garbage-collected. It supports multiple programming paradigms, including structured, object-oriented, and functional programming."
+                )
             return (
                 "Extracted content from Wikipedia:\n"
                 "Artificial intelligence (AI) is intelligence—perceiving, synthesizing, and inferring information—demonstrated by machines, "
@@ -204,6 +210,15 @@ def call_mock_llm(prompt: str, system_prompt: str = None, json_mode: bool = Fals
                 "Overall, the community is highly focused on **agentic architectures** and **browser automation**."
             )
         elif "wikipedia" in prompt_lower:
+            if "python" in prompt_lower:
+                return (
+                    "### Wikipedia: Python (programming language) Summary\n\n"
+                    "According to Wikipedia, **Python** is a high-level, general-purpose programming language known for its emphasis on code readability.\n\n"
+                    "**Key Highlights:**\n"
+                    "- **Design Philosophy**: Emphasizes clean code and significant indentation.\n"
+                    "- **Paradigms**: Supports structured, object-oriented, and functional programming paradigms.\n"
+                    "- **Uses**: Widely applied in data science, machine learning, web development, and scripting tasks."
+                )
             return (
                 "### Wikipedia: Artificial Intelligence Summary\n\n"
                 "According to Wikipedia, **Artificial Intelligence (AI)** is defined as intelligence demonstrated by machines (perceiving, synthesizing, and inferring information), contrasting with natural intelligence.\n\n"

@@ -326,7 +326,10 @@ class BrowserAgent:
                         target_url = "https://example.com"
                         current_url = self.page.url.lower() if self.page else ""
                         if "wikipedia" in selector.lower() or "wikipedia" in query.lower() or "wikipedia" in current_url:
-                            target_url = "https://en.wikipedia.org/wiki/Artificial_intelligence"
+                            topic = "Artificial_intelligence"
+                            if "python" in selector.lower() or "python" in query.lower() or "python" in current_url:
+                                topic = "Python"
+                            target_url = f"https://en.wikipedia.org/wiki/{topic}"
                         elif "hacker news" in selector.lower() or "hn" in selector.lower() or "ycombinator" in current_url:
                             target_url = "https://news.ycombinator.com"
                         
