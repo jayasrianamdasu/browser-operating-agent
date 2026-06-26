@@ -613,6 +613,8 @@ with tab1:
         with col_res2:
             st.write("### 📄 Synthesized Final Summary")
             st.markdown(st.session_state["final_summary"])
+            if use_mock:
+                st.warning("⚠️ **Note:** The agent is running in **Mock LLM (Offline Mode)**. All search results, flight details, and hyperlinks (e.g., `https://example.com/book`) are simulated templates designed for testing. To browse live websites and fetch real clickable links, uncheck **Use Mock LLM (Offline Mode)** in the sidebar and enter your **Groq API Key**.")
             
         if st.button("🚀 Start a New Task"):
             st.session_state["pipeline_stage"] = "input"
