@@ -139,7 +139,7 @@ def call_mock_llm(prompt: str, system_prompt: str = None, json_mode: bool = Fals
             if match:
                 query = urllib.parse.unquote_plus(match.group(1))
             else:
-                match = re.search(r"results for ([^\n'\"]+)", prompt_lower)
+                match = re.search(r"results for ['\"]?([^\n'\"]+)['\"]?", prompt_lower)
                 if match:
                     query = match.group(1).strip()
             
@@ -230,7 +230,7 @@ def call_mock_llm(prompt: str, system_prompt: str = None, json_mode: bool = Fals
             if match:
                 query = match.group(1)
             else:
-                match = re.search(r"results for ([^\n'\"]+)", prompt_lower)
+                match = re.search(r"results for ['\"]?([^\n'\"]+)['\"]?", prompt_lower)
                 if match:
                     query = match.group(1).strip()
             
