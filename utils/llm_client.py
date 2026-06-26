@@ -128,9 +128,9 @@ def call_mock_llm(prompt: str, system_prompt: str = None, json_mode: bool = Fals
             f1, f2, f3 = flights[0], flights[1], flights[2]
             return (
                 f"Extracted flight information from search results:\n"
-                f"1. {f1['airline']} {f1['flight_num']}: {origin} ({origin_code}) to {destination} ({dest_code}) - Price: {f1['price']} (Link: https://example.com/book) - Departs {f1['dep_time']}, Duration {f1['duration']}.\n"
-                f"2. {f2['airline']} {f2['flight_num']}: {origin} ({origin_code}) to {destination} ({dest_code}) - Price: {f2['price']} (Link: https://example.com/book) - Departs {f2['dep_time']}, Duration {f2['duration']}.\n"
-                f"3. {f3['airline']} {f3['flight_num']}: {origin} ({origin_code}) to {destination} ({dest_code}) - Price: {f3['price']} (Link: https://example.com/book) - Departs {f3['dep_time']}, Duration {f3['duration']}."
+                f"1. {f1['airline']} {f1['flight_num']}: {origin} ({origin_code}) to {destination} ({dest_code}) - Price: {f1['price']} (Link: https://www.google.com/travel/flights) - Departs {f1['dep_time']}, Duration {f1['duration']}.\n"
+                f"2. {f2['airline']} {f2['flight_num']}: {origin} ({origin_code}) to {destination} ({dest_code}) - Price: {f2['price']} (Link: https://www.google.com/travel/flights) - Departs {f2['dep_time']}, Duration {f2['duration']}.\n"
+                f"3. {f3['airline']} {f3['flight_num']}: {origin} ({origin_code}) to {destination} ({dest_code}) - Price: {f3['price']} (Link: https://www.google.com/travel/flights) - Departs {f3['dep_time']}, Duration {f3['duration']}."
             )
         elif "duckduckgo.com" in prompt_lower or "search" in prompt_lower:
             # Extract query from url or prompt
@@ -177,11 +177,12 @@ def call_mock_llm(prompt: str, system_prompt: str = None, json_mode: bool = Fals
                     "- Opening Price: $181.90"
                 )
             else:
+                encoded_q = urllib.parse.quote_plus(query)
                 return (
                     f"Extracted DuckDuckGo results for query: '{query}':\n"
-                    f"1. Top Result: Best guides and discussions for {query} (Link: https://example.com/search-result-1) - Detailed information on {query}.\n"
-                    f"2. News update: Latest updates and releases for {query} (Link: https://example.com/search-result-2) - Industry reports for {query}.\n"
-                    f"3. Community thread: Tips, tricks, and tutorials on {query} (Link: https://example.com/search-result-3) - Q&A on {query}."
+                    f"1. Top Result: Best guides and discussions for {query} (Link: https://en.wikipedia.org/wiki/Special:Search?search={encoded_q}) - Detailed information on {query}.\n"
+                    f"2. News update: Latest updates and releases for {query} (Link: https://news.google.com/search?q={encoded_q}) - Industry reports for {query}.\n"
+                    f"3. Community thread: Tips, tricks, and tutorials on {query} (Link: https://github.com/search?q={encoded_q}) - Q&A on {query}."
                 )
         else:
             return (
@@ -218,9 +219,9 @@ def call_mock_llm(prompt: str, system_prompt: str = None, json_mode: bool = Fals
             return (
                 f"### ✈️ Cheapest Flights from {origin} to {destination}\n\n"
                 f"Here are the top flight options retrieved from the search results:\n\n"
-                f"1. **{f1['airline']} ({f1['flight_num']})**: **{f1['price']}** (Cheapest option) - Departs at {f1['dep_time']}, {f1['duration']} duration. [Book flight](https://example.com/book)\n"
-                f"2. **{f2['airline']} ({f2['flight_num']})**: **{f2['price']}** - Departs at {f2['dep_time']}, {f2['duration']} duration. [Book flight](https://example.com/book)\n"
-                f"3. **{f3['airline']} ({f3['flight_num']})**: **{f3['price']}** - Departs at {f3['dep_time']}, {f3['duration']} duration. [Book flight](https://example.com/book)\n\n"
+                f"1. **{f1['airline']} ({f1['flight_num']})**: **{f1['price']}** (Cheapest option) - Departs at {f1['dep_time']}, {f1['duration']} duration. [Book flight](https://www.google.com/travel/flights)\n"
+                f"2. **{f2['airline']} ({f2['flight_num']})**: **{f2['price']}** - Departs at {f2['dep_time']}, {f2['duration']} duration. [Book flight](https://www.google.com/travel/flights)\n"
+                f"3. **{f3['airline']} ({f3['flight_num']})**: **{f3['price']}** - Departs at {f3['dep_time']}, {f3['duration']} duration. [Book flight](https://www.google.com/travel/flights)\n\n"
                 f"All flights are direct. Prices are subject to availability."
             )
         else:
@@ -250,17 +251,17 @@ def call_mock_llm(prompt: str, system_prompt: str = None, json_mode: bool = Fals
                 return (
                     "### 🎧 Best Noise-Cancelling Headphones of 2026\n\n"
                     "Here are the top-rated ANC headphones based on battery life, noise cancellation, and price:\n\n"
-                    "1. **Sony WH-1000XM6**: **$399** - Outstanding ANC, **42-hour** battery life. [Buy on Amazon](https://example.com)\n"
-                    "2. **Bose QuietComfort Ultra**: **$429** - Unmatched comfort, **24-hour** battery life. [Buy on Best Buy](https://example.com)\n"
-                    "3. **Sennheiser Momentum 4**: **$349** - Class-leading sound quality, **60-hour** battery life (best battery). [Buy on Walmart](https://example.com)"
+                    "1. **Sony WH-1000XM6**: **$399** - Outstanding ANC, **42-hour** battery life. [Buy on Amazon](https://www.amazon.com/s?k=Sony+WH-1000XM6)\n"
+                    "2. **Bose QuietComfort Ultra**: **$429** - Unmatched comfort, **24-hour** battery life. [Buy on Best Buy](https://www.bestbuy.com/site/searchpage.jsp?st=Bose+QuietComfort+Ultra)\n"
+                    "3. **Sennheiser Momentum 4**: **$349** - Class-leading sound quality, **60-hour** battery life (best battery). [Buy on Walmart](https://www.walmart.com/search?q=Sennheiser+Momentum+4)"
                 )
             elif "purifier" in query_sub:
                 return (
                     "### 🍃 Best HEPA Air Purifiers for Allergies & Pets\n\n"
                     "Here is a summary of the top-rated air purifiers based on square footage and price:\n\n"
-                    "1. **Coway Airmega 400S**: **$499** - Covers up to **1,560 sq ft** (Best for large rooms). [Check Coway](https://example.com)\n"
-                    "2. **Blueair Blue Pure 211i Max**: **$349** - Covers up to **600 sq ft** (Whisper-quiet operations). [Check Blueair](https://example.com)\n"
-                    "3. **Levoit Core 400S**: **$219** - Covers up to **403 sq ft** (Top smart app budget pick). [Check Levoit](https://example.com)"
+                    "1. **Coway Airmega 400S**: **$499** - Covers up to **1,560 sq ft** (Best for large rooms). [Check Coway](https://www.amazon.com/s?k=Coway+Airmega+400S)\n"
+                    "2. **Blueair Blue Pure 211i Max**: **$349** - Covers up to **600 sq ft** (Whisper-quiet operations). [Check Blueair](https://www.amazon.com/s?k=Blueair+Blue+Pure+211i+Max)\n"
+                    "3. **Levoit Core 400S**: **$219** - Covers up to **403 sq ft** (Top smart app budget pick). [Check Levoit](https://www.amazon.com/s?k=Levoit+Core+400S)"
                 )
             elif "apple" in query_sub or "aapl" in query_sub:
                 return (
@@ -272,12 +273,13 @@ def call_mock_llm(prompt: str, system_prompt: str = None, json_mode: bool = Fals
                     "AAPL showed steady gains today following robust service revenue reports and high trading volume."
                 )
             else:
+                encoded_q = urllib.parse.quote_plus(query)
                 return (
                     f"### 🔍 Search Summary for '{query}'\n\n"
                     f"I have successfully searched DuckDuckGo for **'{query}'** and analyzed the results:\n\n"
-                    f"* **Top Guide**: Displays high engagement details regarding **{query}**. [View Guide](https://example.com/search-result-1)\n"
-                    f"* **News & Releases**: Documents recent product highlights and community discussions concerning **{query}**. [View News](https://example.com/search-result-2)\n"
-                    f"* **Tips & Tutorials**: Useful community troubleshooting and code references for **{query}**. [View Community](https://example.com/search-result-3)\n\n"
+                    f"* **Top Guide**: Displays high engagement details regarding **{query}**. [View Guide](https://en.wikipedia.org/wiki/Special:Search?search={encoded_q})\n"
+                    f"* **News & Releases**: Documents recent product highlights and community discussions concerning **{query}**. [View News](https://news.google.com/search?q={encoded_q})\n"
+                    f"* **Tips & Tutorials**: Useful community troubleshooting and code references for **{query}**. [View Community](https://github.com/search?q={encoded_q})\n\n"
                     f"The overall search results demonstrate active developer interest and a wide range of learning resources available for **{query}**."
                 )
     
