@@ -49,7 +49,7 @@ def clean_html(html_content: str, max_chars: int = 15000) -> str:
         logger.error(f"Error cleaning HTML: {e}")
         return html_content[:max_chars]
 
-def save_session_log(prompt: str, plan: list, steps: list, final_summary: str, logs_dir: str = None) -> str:
+def save_session_log(prompt: str, plan: list, steps: list, final_summary: str, duration: float = 0.0, logs_dir: str = None) -> str:
     """
     Saves the session logs to a JSON file.
     """
@@ -68,7 +68,8 @@ def save_session_log(prompt: str, plan: list, steps: list, final_summary: str, l
         "prompt": prompt,
         "plan": plan,
         "steps": steps,  # Each step has: action, details, screenshot_path, status, log
-        "final_summary": final_summary
+        "final_summary": final_summary,
+        "duration": duration
     }
     
     file_path = os.path.join(logs_dir, f"{task_id}.json")
@@ -404,6 +405,191 @@ def generate_mock_screenshot(url: str, action: str, path: str):
     img.save(path)
 
 
+def _get_duckduckgo_html(query: str, url: str) -> str:
+    """
+    Helper function to generate the DuckDuckGo mock search results HTML.
+    """
+    url_lower = url.lower() if url else ""
+    search_term = query if query else "latest AI news"
+    if not query and "q=" in url_lower:
+        match = re.search(r"q=([^&]+)", url_lower)
+        if match:
+            search_term = urllib.parse.unquote_plus(match.group(1))
+            
+    # Generate dynamic slugs and details
+    slug = re.sub(r'[^a-zA-Z0-9]+', '-', search_term.lower()).strip('-')
+    search_lower = search_term.lower()
+    
+    # Check for specific queries to provide high-fidelity realistic answers
+    if "paying skill" in search_lower or "computer science skill" in search_lower:
+        res1_title = "Top 10 Highest Paying Tech Skills in 2026"
+        res1_url = "https://www.techsalary-guide.com/highest-paying-skills-2026"
+        res1_snippet = "Discover the top paying skills: 1. Generative AI / Large Language Models (Average salary $185,000), 2. Cloud Architecture (AWS/Azure - Average $165,000), 3. Cybersecurity & Zero Trust (Average $160,000), 4. Data Engineering & Analytics (Average $155,000), and 5. DevOps & Infrastructure as Code (Average $150,000)."
+        
+        res2_title = "The Most Demanded Computer Science Skills - Forbes"
+        res2_url = "https://www.forbes.com/business/tech-skills-in-demand"
+        res2_snippet = "Tech industries are paying top dollar for specialized skills. Machine Learning Engineers, Cloud Engineers, and Cybersecurity Experts remain at the top of the salary bracket, with senior roles easily clearing $200k in 2026."
+        
+        res3_title = "GitHub - awesome-paying-skills: Salaries & Resources"
+        res3_url = "https://github.com/developer-salaries/awesome-paying-skills"
+        res3_snippet = "A curated database of salaries, interview guides, and certification courses for Generative AI, Cloud Infrastructure, Cyber Security, Data Engineering, and DevOps."
+    elif "headphone" in search_lower or "audio" in search_lower:
+        res1_title = "The Best Noise-Cancelling Headphones of 2026 - Reviews"
+        res1_url = "https://www.audiosound-guide.com/best-noise-cancelling-headphones"
+        res1_snippet = "We review the top headphones of the year: 1. Sony WH-1000XM6 (Outstanding ANC, 42h battery, $399), 2. Bose QuietComfort Ultra (Unmatched comfort, 24h battery, $429), and 3. Sennheiser Momentum 4 (Class-leading sound quality, 60h battery, $349)."
+        
+        res2_title = "Bose vs Sony vs Sennheiser: Which ANC Headphone is Best?"
+        res2_url = "https://www.soundwire-reviews.com/anc-headphone-showdown"
+        res2_snippet = "A direct head-to-head comparison. Sony's new WH-1000XM6 offers the best active noise cancellation and 42-hour battery life. Sennheiser leads in audiophile sound with 60-hour battery life, while Bose excels in comfort."
+        
+        res3_title = "Cheapest Deals on Premium ANC Headphones - TechRadar"
+        res3_url = "https://www.techradar.com/deals/headphones"
+        res3_snippet = "Find sales on the Sony XM6 ($379 at Amazon), Bose QC Ultra ($399 at Best Buy), and Sennheiser Momentum 4 ($299 at Walmart)."
+    elif "purifier" in search_lower:
+        res1_title = "Best Air Purifiers for Allergies & Pets in 2026"
+        res1_url = "https://www.homeair-ratings.com/best-air-purifiers-allergies"
+        res1_snippet = "The top air purifiers: 1. Coway Airmega 400S (Coverage 1560 sq ft, Dual HEPA, $499), 2. Blueair Blue Pure 211i Max (Coverage 600 sq ft, Whisper quiet, $349), and 3. Levoit Core 400S (Coverage 403 sq ft, Smart control, $219)."
+        
+        res2_title = "HEPA Air Purifiers: Ratings & Review Guide"
+        res2_url = "https://www.cleanair-consumer.org/hepa-purifier-ratings"
+        res2_snippet = "A comparison of True HEPA filters. Coway Airmega offers the best large-room coverage (1560 sq ft), while the Blueair Pure 211i Max is the most energy-efficient for medium rooms (600 sq ft)."
+        
+        res3_title = "Levoit vs Coway: Best Smart Air Purifiers"
+        res3_url = "https://www.smarthome-insider.com/purifier-comparison"
+        res3_snippet = "Comparison of app control and air quality sensors. The Levoit Core 400S ($219) is our top budget recommendation, while the Coway Airmega 400S ($499) excels in raw purification power."
+    elif "apple" in search_lower or "aapl" in search_lower:
+        res1_title = "Apple Inc. (AAPL) Stock Price Today & Real-Time Quote"
+        res1_url = "https://www.finance-marketwatch.com/stocks/aapl"
+        res1_snippet = "Real-time Apple stock quote: AAPL is currently trading at $182.50 (+1.25%). Today's High: $183.10, Today's Low: $181.40, Opening Price: $181.90. Volume: 52.4 million shares."
+        
+        res2_title = "Apple (AAPL) Stock Analysis & Wall Street Forecasts"
+        res2_url = "https://www.marketinsider-finance.com/news/aapl-stock"
+        res2_snippet = "AAPL closed at $182.50 today, showing strength after opening at $181.90. Analysts set a 12-month median target of $210, citing strong services revenue and upcoming hardware announcements."
+        
+        res3_title = "AAPL - Apple Inc. Shareholders & Earnings Reports"
+        res3_url = "https://www.sec-investments.com/ticker/aapl"
+        res3_snippet = "AAPL details: Market cap $2.85T, PE ratio 28.4, EPS $6.42. Today's trading range: $181.40 - $183.10."
+    else:
+        is_shopping = any(w in search_term.lower() for w in ["price", "cheap", "buy", "cost", "store", "sale", "cleanser", "cetaphil", "ticket", "hotel", "product"])
+        if is_shopping:
+            res1_title = f"Buy {search_term.title()} at Best Prices Online"
+            res1_url = f"https://www.retail-deals.com/buy/{slug}"
+            res1_snippet = f"Compare prices for {search_term}. Find it in stock for $9.99 (8oz) and $14.50 (16oz). Free shipping on orders over $25. Read user ratings and discount coupons."
+            
+            res2_title = f"Cheapest {search_term.title()} Deals & Discounts"
+            res2_url = f"https://www.super-discount-hub.com/search?q={slug}"
+            res2_snippet = f"Get the best deals on {search_term}. Lowest price found online is $8.49 at Walmart, followed by $10.20 at Target. Compare pharmacy prices and save up to 40%."
+            
+            res3_title = f"Top 10 Best {search_term.title()} Reviews and Store Locations"
+            res3_url = f"https://www.consumerguide.org/reviews/{slug}"
+            res3_snippet = f"Read verified buyer reviews for {search_term}. Check local pharmacy listings and stock status. Price ranges from $8.49 to $12.99 across major retailers."
+        else:
+            res1_title = f"Complete Guide to {search_term.title()} - Official Overview"
+            res1_url = f"https://www.knowledgebase-hub.org/wiki/{slug}"
+            res1_snippet = f"Learn everything about {search_term}. Discover official documentation, tutorials, pricing details, and implementation roadmaps for beginners."
+            
+            res2_title = f"Latest News, Trends & Updates on {search_term.title()}"
+            res2_url = f"https://www.techtrends-daily.com/news/{slug}"
+            res2_snippet = f"Read the most recent articles and community announcements regarding {search_term}. Expert columns, comparison guides, and user reviews updated daily."
+            
+            res3_title = f"GitHub - community/awesome-{slug}: Curated list of resources"
+            res3_url = f"https://github.com/community/awesome-{slug}"
+            res3_snippet = f"A curated list of awesome tutorials, libraries, tools, and code repositories relating to {search_term}. Contribute to the roadmap and join the developer chat."
+        
+    return f"""<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>{search_term} at DuckDuckGo</title>
+<style>
+  body {{
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background-color: #1e1e1e;
+    color: #c9d1d9;
+    margin: 0;
+    padding: 0;
+  }}
+  .header {{
+    background-color: #2d2d2d;
+    padding: 15px 30px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #30363d;
+  }}
+  .logo {{
+    color: #de5833;
+    font-size: 20px;
+    font-weight: bold;
+    margin-right: 25px;
+    text-decoration: none;
+  }}
+  .search-box {{
+    background-color: #1e1e1e;
+    border: 1px solid #444;
+    border-radius: 8px;
+    padding: 8px 16px;
+    width: 450px;
+    color: #fff;
+    font-size: 15px;
+  }}
+  .content {{
+    max-width: 800px;
+    padding: 30px 40px;
+  }}
+  .result {{
+    margin-bottom: 28px;
+  }}
+  .result-title {{
+    font-size: 18px;
+    color: #58a6ff;
+    text-decoration: none;
+    font-weight: 500;
+  }}
+  .result-title:hover {{
+    text-decoration: underline;
+  }}
+  .result-url {{
+    color: #3fb950;
+    font-size: 13px;
+    margin: 3px 0;
+  }}
+  .result-snippet {{
+    color: #8b949e;
+    font-size: 14px;
+    line-height: 1.5;
+  }}
+</style>
+</head>
+<body>
+  <div class="header">
+    <a href="#" class="logo">🦆 DuckDuckGo</a>
+    <input type="text" class="search-box" value="{search_term}" readonly>
+  </div>
+  <div class="content">
+    <div style="color:#8b949e; font-size:13px; margin-bottom:20px;">Search results for: <b>{search_term}</b></div>
+    
+    <div class="result">
+      <a class="result-title" href="{res1_url}">{res1_title}</a>
+      <div class="result-url">{res1_url}</div>
+      <div class="result-snippet">{res1_snippet}</div>
+    </div>
+    
+    <div class="result">
+      <a class="result-title" href="{res2_url}">{res2_title}</a>
+      <div class="result-url">{res2_url}</div>
+      <div class="result-snippet">{res2_snippet}</div>
+    </div>
+    
+    <div class="result">
+      <a class="result-title" href="{res3_url}">{res3_title}</a>
+      <div class="result-url">{res3_url}</div>
+      <div class="result-snippet">{res3_snippet}</div>
+    </div>
+  </div>
+</body>
+</html>"""
+
+
 def get_mock_html(url: str, query: str = "", action: str = "") -> str:
     """
     Returns a beautifully styled, responsive mock HTML page representing
@@ -414,188 +600,8 @@ def get_mock_html(url: str, query: str = "", action: str = "") -> str:
     query_lower = query.lower() if query else ""
     action_lower = action.lower() if action else ""
     
-    # 1. Hacker News Template
-    if "news.ycombinator.com" in url_lower or "hacker news" in query_lower:
-        return """<!DOCTYPE html>
-<html>
-<head>
-<meta charset="utf-8">
-<title>Hacker News</title>
-<style>
-  body {
-    font-family: Verdana, Geneva, sans-serif;
-    background-color: #f6f6ef;
-    color: #000000;
-    margin: 0;
-    padding: 0;
-  }
-  .hn-header {
-    background-color: #ff6600;
-    padding: 6px 12px;
-    display: flex;
-    align-items: center;
-  }
-  .hn-logo {
-    border: 1px solid white;
-    font-weight: bold;
-    color: white;
-    padding: 2px 6px;
-    margin-right: 8px;
-    font-size: 13px;
-  }
-  .hn-title {
-    font-weight: bold;
-    font-size: 14px;
-    margin-right: 15px;
-  }
-  .hn-nav {
-    font-size: 11px;
-    color: #000;
-  }
-  .hn-content {
-    padding: 15px 25px;
-  }
-  .story {
-    margin-top: 12px;
-    font-size: 13px;
-  }
-  .story-title {
-    color: #000000;
-    text-decoration: none;
-  }
-  .story-title:hover {
-    text-decoration: underline;
-  }
-  .story-site {
-    color: #828282;
-    font-size: 10px;
-  }
-  .story-subtext {
-    font-size: 10px;
-    color: #828282;
-    margin-top: 3px;
-  }
-</style>
-</head>
-<body>
-  <div class="hn-header">
-    <span class="hn-logo">Y</span>
-    <span class="hn-title">Hacker News</span>
-    <span class="hn-nav">new | past | comments | ask | show | jobs | submit</span>
-  </div>
-  <div class="hn-content">
-    <div class="story">
-      <span style="color:#828282">1.</span> 
-      <a class="story-title" href="https://news.ycombinator.com/item?id=45192031">OpenAI Releases GPT-5 with Advanced Browser Integration</a>
-      <span class="story-site">(news.ycombinator.com)</span>
-      <div class="story-subtext">425 points by techcrunch 2 hours ago | 102 comments</div>
-    </div>
-    <div class="story">
-      <span style="color:#828282">2.</span> 
-      <a class="story-title" href="https://github.com/googledm/antigravity">Show HN: Antigravity - An Autonomous Agent Framework</a>
-      <span class="story-site">(github.com/googledm)</span>
-      <div class="story-subtext">180 points by googledm 4 hours ago | 45 comments</div>
-    </div>
-    <div class="story">
-      <span style="color:#828282">3.</span> 
-      <a class="story-title" href="https://browserdev.org/future-playwright">The Future of Web Automation and Playwright</a>
-      <span class="story-site">(browserdev.org)</span>
-      <div class="story-subtext">95 points by browserdev 5 hours ago | 20 comments</div>
-    </div>
-    <div style="margin-top: 25px; font-size: 12px; color: #828282; cursor: pointer;">More...</div>
-  </div>
-</body>
-</html>"""
-
-    # 2. Wikipedia Template
-    elif "wikipedia.org" in url_lower or "wikipedia" in query_lower or "wikipedia" in url_lower:
-        # Extract title from URL if possible, e.g. /wiki/Artificial_intelligence
-        title = "Artificial intelligence"
-        match = re.search(r"/wiki/([^/]+)", url)
-        if match:
-            title = urllib.parse.unquote(match.group(1)).replace("_", " ")
-        
-        return f"""<!DOCTYPE html>
-<html>
-<head>
-<meta charset="utf-8">
-<title>{title} - Wikipedia</title>
-<style>
-  body {{
-    font-family: sans-serif;
-    background-color: #ffffff;
-    color: #202122;
-    margin: 0;
-    padding: 0;
-  }}
-  .wiki-header {{
-    background-color: #f8f9fa;
-    border-bottom: 1px solid #a2a9b1;
-    padding: 12px 30px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }}
-  .wiki-logo {{
-    font-size: 20px;
-    font-weight: normal;
-    color: #000;
-    text-decoration: none;
-  }}
-  .wiki-search {{
-    padding: 6px 12px;
-    width: 250px;
-    border: 1px solid #a2a9b1;
-    border-radius: 2px;
-  }}
-  .wiki-body {{
-    padding: 40px 60px;
-    max-width: 900px;
-  }}
-  .wiki-title {{
-    font-family: 'Georgia', Times, serif;
-    font-size: 34px;
-    border-bottom: 1px solid #a2a9b1;
-    padding-bottom: 5px;
-    margin-top: 0;
-    font-weight: normal;
-  }}
-  .wiki-subtitle {{
-    font-size: 13px;
-    color: #54595d;
-    margin-top: 5px;
-    margin-bottom: 25px;
-  }}
-  .wiki-p {{
-    font-size: 15px;
-    line-height: 1.6;
-    margin-bottom: 18px;
-  }}
-  .wiki-p b {{
-    font-weight: bold;
-  }}
-</style>
-</head>
-<body>
-  <div class="wiki-header">
-    <a href="#" class="wiki-logo">📖 Wikipedia</a>
-    <input type="text" class="wiki-search" value="{title}" readonly>
-  </div>
-  <div class="wiki-body">
-    <h1 class="wiki-title">{title}</h1>
-    <div class="wiki-subtitle">From Wikipedia, the free encyclopedia</div>
-    <p class="wiki-p">
-      <b>{title}</b> is intelligence—perceiving, synthesizing, and inferring information—demonstrated by machines, as opposed to intelligence displayed by non-human animals and humans. Example applications include advanced web search engines, recommendation systems, understanding human speech, self-driving cars, generative tools, and competing at the highest level in strategic games.
-    </p>
-    <p class="wiki-p">
-      As a field of study, AI combines computer science, mathematics, statistics, cognitive science, and philosophy. The field was founded on the assumption that human intelligence can be so precisely described that a machine can be made to simulate it. This raised philosophical arguments about the mind and the ethical consequences of creating artificial beings.
-    </p>
-  </div>
-</body>
-</html>"""
-
-    # 3. Flight Tickets Template
-    elif any(w in query_lower or w in url_lower for w in ["flight", "ticket", "bangalore", "hyderabad"]):
+    # 1. Flight Tickets Template (Higher priority than search results since it's also a search)
+    if any(w in query_lower or w in url_lower for w in ["flight", "ticket", "bangalore", "hyderabad"]):
         origin, origin_code, destination, dest_code = extract_cities_from_query(url, query)
         flights = generate_random_flights(origin_code, dest_code, query or url)
         f1, f2, f3 = flights[0], flights[1], flights[2]
@@ -794,187 +800,195 @@ def get_mock_html(url: str, query: str = "", action: str = "") -> str:
             "INR 3,890", f3["price"]
         )
 
-    # 4. Search Results Template (DuckDuckGo style)
-    elif "duckduckgo" in url_lower or action_lower == "search" or query_lower:
-        # Determine search term
-        search_term = query if query else "latest AI news"
-        if not query and "q=" in url_lower:
-            match = re.search(r"q=([^&]+)", url_lower)
-            if match:
-                search_term = urllib.parse.unquote_plus(match.group(1))
-                
-        # Generate dynamic slugs and details
-        slug = re.sub(r'[^a-zA-Z0-9]+', '-', search_term.lower()).strip('-')
-        search_lower = search_term.lower()
+    # 2. Search Results Template (DuckDuckGo style) - Priority when searching other terms
+    elif "duckduckgo" in url_lower or action_lower == "search":
+        return _get_duckduckgo_html(query, url)
         
-        # Check for specific queries to provide high-fidelity realistic answers
-        if "paying skill" in search_lower or "computer science skill" in search_lower:
-            res1_title = "Top 10 Highest Paying Tech Skills in 2026"
-            res1_url = "https://www.techsalary-guide.com/highest-paying-skills-2026"
-            res1_snippet = "Discover the top paying skills: 1. Generative AI / Large Language Models (Average salary $185,000), 2. Cloud Architecture (AWS/Azure - Average $165,000), 3. Cybersecurity & Zero Trust (Average $160,000), 4. Data Engineering & Analytics (Average $155,000), and 5. DevOps & Infrastructure as Code (Average $150,000)."
-            
-            res2_title = "The Most Demanded Computer Science Skills - Forbes"
-            res2_url = "https://www.forbes.com/business/tech-skills-in-demand"
-            res2_snippet = "Tech industries are paying top dollar for specialized skills. Machine Learning Engineers, Cloud Engineers, and Cybersecurity Experts remain at the top of the salary bracket, with senior roles easily clearing $200k in 2026."
-            
-            res3_title = "GitHub - awesome-paying-skills: Salaries & Resources"
-            res3_url = "https://github.com/developer-salaries/awesome-paying-skills"
-            res3_snippet = "A curated database of salaries, interview guides, and certification courses for Generative AI, Cloud Infrastructure, Cyber Security, Data Engineering, and DevOps."
-        elif "headphone" in search_lower or "audio" in search_lower:
-            res1_title = "The Best Noise-Cancelling Headphones of 2026 - Reviews"
-            res1_url = "https://www.audiosound-guide.com/best-noise-cancelling-headphones"
-            res1_snippet = "We review the top headphones of the year: 1. Sony WH-1000XM6 (Outstanding ANC, 42h battery, $399), 2. Bose QuietComfort Ultra (Unmatched comfort, 24h battery, $429), and 3. Sennheiser Momentum 4 (Class-leading sound quality, 60h battery, $349)."
-            
-            res2_title = "Bose vs Sony vs Sennheiser: Which ANC Headphone is Best?"
-            res2_url = "https://www.soundwire-reviews.com/anc-headphone-showdown"
-            res2_snippet = "A direct head-to-head comparison. Sony's new WH-1000XM6 offers the best active noise cancellation and 42-hour battery life. Sennheiser leads in audiophile sound with 60-hour battery life, while Bose excels in comfort."
-            
-            res3_title = "Cheapest Deals on Premium ANC Headphones - TechRadar"
-            res3_url = "https://www.techradar.com/deals/headphones"
-            res3_snippet = "Find sales on the Sony XM6 ($379 at Amazon), Bose QC Ultra ($399 at Best Buy), and Sennheiser Momentum 4 ($299 at Walmart)."
-        elif "purifier" in search_lower:
-            res1_title = "Best Air Purifiers for Allergies & Pets in 2026"
-            res1_url = "https://www.homeair-ratings.com/best-air-purifiers-allergies"
-            res1_snippet = "The top air purifiers: 1. Coway Airmega 400S (Coverage 1560 sq ft, Dual HEPA, $499), 2. Blueair Blue Pure 211i Max (Coverage 600 sq ft, Whisper quiet, $349), and 3. Levoit Core 400S (Coverage 403 sq ft, Smart control, $219)."
-            
-            res2_title = "HEPA Air Purifiers: Ratings & Review Guide"
-            res2_url = "https://www.cleanair-consumer.org/hepa-purifier-ratings"
-            res2_snippet = "A comparison of True HEPA filters. Coway Airmega offers the best large-room coverage (1560 sq ft), while the Blueair Pure 211i Max is the most energy-efficient for medium rooms (600 sq ft)."
-            
-            res3_title = "Levoit vs Coway: Best Smart Air Purifiers"
-            res3_url = "https://www.smarthome-insider.com/purifier-comparison"
-            res3_snippet = "Comparison of app control and air quality sensors. The Levoit Core 400S ($219) is our top budget recommendation, while the Coway Airmega 400S ($499) excels in raw purification power."
-        elif "apple" in search_lower or "aapl" in search_lower:
-            res1_title = "Apple Inc. (AAPL) Stock Price Today & Real-Time Quote"
-            res1_url = "https://www.finance-marketwatch.com/stocks/aapl"
-            res1_snippet = "Real-time Apple stock quote: AAPL is currently trading at $182.50 (+1.25%). Today's High: $183.10, Today's Low: $181.40, Opening Price: $181.90. Volume: 52.4 million shares."
-            
-            res2_title = "Apple (AAPL) Stock Analysis & Wall Street Forecasts"
-            res2_url = "https://www.marketinsider-finance.com/news/aapl-stock"
-            res2_snippet = "AAPL closed at $182.50 today, showing strength after opening at $181.90. Analysts set a 12-month median target of $210, citing strong services revenue and upcoming hardware announcements."
-            
-            res3_title = "AAPL - Apple Inc. Shareholders & Earnings Reports"
-            res3_url = "https://www.sec-investments.com/ticker/aapl"
-            res3_snippet = "AAPL details: Market cap $2.85T, PE ratio 28.4, EPS $6.42. Today's trading range: $181.40 - $183.10."
-        else:
-            is_shopping = any(w in search_term.lower() for w in ["price", "cheap", "buy", "cost", "store", "sale", "cleanser", "cetaphil", "ticket", "hotel", "product"])
-            if is_shopping:
-                res1_title = f"Buy {search_term.title()} at Best Prices Online"
-                res1_url = f"https://www.retail-deals.com/buy/{slug}"
-                res1_snippet = f"Compare prices for {search_term}. Find it in stock for $9.99 (8oz) and $14.50 (16oz). Free shipping on orders over $25. Read user ratings and discount coupons."
-                
-                res2_title = f"Cheapest {search_term.title()} Deals & Discounts"
-                res2_url = f"https://www.super-discount-hub.com/search?q={slug}"
-                res2_snippet = f"Get the best deals on {search_term}. Lowest price found online is $8.49 at Walmart, followed by $10.20 at Target. Compare pharmacy prices and save up to 40%."
-                
-                res3_title = f"Top 10 Best {search_term.title()} Reviews and Store Locations"
-                res3_url = f"https://www.consumerguide.org/reviews/{slug}"
-                res3_snippet = f"Read verified buyer reviews for {search_term}. Check local pharmacy listings and stock status. Price ranges from $8.49 to $12.99 across major retailers."
-            else:
-                res1_title = f"Complete Guide to {search_term.title()} - Official Overview"
-                res1_url = f"https://www.knowledgebase-hub.org/wiki/{slug}"
-                res1_snippet = f"Learn everything about {search_term}. Discover official documentation, tutorials, pricing details, and implementation roadmaps for beginners."
-                
-                res2_title = f"Latest News, Trends & Updates on {search_term.title()}"
-                res2_url = f"https://www.techtrends-daily.com/news/{slug}"
-                res2_snippet = f"Read the most recent articles and community announcements regarding {search_term}. Expert columns, comparison guides, and user reviews updated daily."
-                
-                res3_title = f"GitHub - community/awesome-{slug}: Curated list of resources"
-                res3_url = f"https://github.com/community/awesome-{slug}"
-                res3_snippet = f"A curated list of awesome tutorials, libraries, tools, and code repositories relating to {search_term}. Contribute to the roadmap and join the developer chat."
-            
+    # 2. Hacker News Template
+    elif "news.ycombinator.com" in url_lower or "hacker news" in query_lower:
+        return """<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Hacker News</title>
+<style>
+  body {
+    font-family: Verdana, Geneva, sans-serif;
+    background-color: #f6f6ef;
+    color: #000000;
+    margin: 0;
+    padding: 0;
+  }
+  .hn-header {
+    background-color: #ff6600;
+    padding: 6px 12px;
+    display: flex;
+    align-items: center;
+  }
+  .hn-logo {
+    border: 1px solid white;
+    font-weight: bold;
+    color: white;
+    padding: 2px 6px;
+    margin-right: 8px;
+    font-size: 13px;
+  }
+  .hn-title {
+    font-weight: bold;
+    font-size: 14px;
+    margin-right: 15px;
+  }
+  .hn-nav {
+    font-size: 11px;
+    color: #000;
+  }
+  .hn-content {
+    padding: 15px 25px;
+  }
+  .story {
+    margin-top: 12px;
+    font-size: 13px;
+  }
+  .story-title {
+    color: #000000;
+    text-decoration: none;
+  }
+  .story-title:hover {
+    text-decoration: underline;
+  }
+  .story-site {
+    color: #828282;
+    font-size: 10px;
+  }
+  .story-subtext {
+    font-size: 10px;
+    color: #828282;
+    margin-top: 3px;
+  }
+</style>
+</head>
+<body>
+  <div class="hn-header">
+    <span class="hn-logo">Y</span>
+    <span class="hn-title">Hacker News</span>
+    <span class="hn-nav">new | past | comments | ask | show | jobs | submit</span>
+  </div>
+  <div class="hn-content">
+    <div class="story">
+      <span style="color:#828282">1.</span> 
+      <a class="story-title" href="https://news.ycombinator.com/item?id=45192031">OpenAI Releases GPT-5 with Advanced Browser Integration</a>
+      <span class="story-site">(news.ycombinator.com)</span>
+      <div class="story-subtext">425 points by techcrunch 2 hours ago | 102 comments</div>
+    </div>
+    <div class="story">
+      <span style="color:#828282">2.</span> 
+      <a class="story-title" href="https://github.com/googledm/antigravity">Show HN: Antigravity - An Autonomous Agent Framework</a>
+      <span class="story-site">(github.com/googledm)</span>
+      <div class="story-subtext">180 points by googledm 4 hours ago | 45 comments</div>
+    </div>
+    <div class="story">
+      <span style="color:#828282">3.</span> 
+      <a class="story-title" href="https://browserdev.org/future-playwright">The Future of Web Automation and Playwright</a>
+      <span class="story-site">(browserdev.org)</span>
+      <div class="story-subtext">95 points by browserdev 5 hours ago | 20 comments</div>
+    </div>
+    <div style="margin-top: 25px; font-size: 12px; color: #828282; cursor: pointer;">More...</div>
+  </div>
+</body>
+</html>"""
+
+    # 2. Wikipedia Template
+    elif "wikipedia.org" in url_lower or "wikipedia" in query_lower or "wikipedia" in url_lower:
+        # Extract title from URL if possible, e.g. /wiki/Artificial_intelligence
+        title = "Artificial intelligence"
+        match = re.search(r"/wiki/([^/]+)", url)
+        if match:
+            title = urllib.parse.unquote(match.group(1)).replace("_", " ")
+        
         return f"""<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
-<title>{search_term} at DuckDuckGo</title>
+<title>{title} - Wikipedia</title>
 <style>
   body {{
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    background-color: #1e1e1e;
-    color: #c9d1d9;
+    font-family: sans-serif;
+    background-color: #ffffff;
+    color: #202122;
     margin: 0;
     padding: 0;
   }}
-  .header {{
-    background-color: #2d2d2d;
-    padding: 15px 30px;
+  .wiki-header {{
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #a2a9b1;
+    padding: 12px 30px;
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid #30363d;
   }}
-  .logo {{
-    color: #de5833;
+  .wiki-logo {{
     font-size: 20px;
-    font-weight: bold;
-    margin-right: 25px;
+    font-weight: normal;
+    color: #000;
     text-decoration: none;
   }}
-  .search-box {{
-    background-color: #1e1e1e;
-    border: 1px solid #444;
-    border-radius: 8px;
-    padding: 8px 16px;
-    width: 450px;
-    color: #fff;
-    font-size: 15px;
+  .wiki-search {{
+    padding: 6px 12px;
+    width: 250px;
+    border: 1px solid #a2a9b1;
+    border-radius: 2px;
   }}
-  .content {{
-    max-width: 800px;
-    padding: 30px 40px;
+  .wiki-body {{
+    padding: 40px 60px;
+    max-width: 900px;
   }}
-  .result {{
-    margin-bottom: 28px;
+  .wiki-title {{
+    font-family: 'Georgia', Times, serif;
+    font-size: 34px;
+    border-bottom: 1px solid #a2a9b1;
+    padding-bottom: 5px;
+    margin-top: 0;
+    font-weight: normal;
   }}
-  .result-title {{
-    font-size: 18px;
-    color: #58a6ff;
-    text-decoration: none;
-    font-weight: 500;
-  }}
-  .result-title:hover {{
-    text-decoration: underline;
-  }}
-  .result-url {{
-    color: #3fb950;
+  .wiki-subtitle {{
     font-size: 13px;
-    margin: 3px 0;
+    color: #54595d;
+    margin-top: 5px;
+    margin-bottom: 25px;
   }}
-  .result-snippet {{
-    color: #8b949e;
-    font-size: 14px;
-    line-height: 1.5;
+  .wiki-p {{
+    font-size: 15px;
+    line-height: 1.6;
+    margin-bottom: 18px;
+  }}
+  .wiki-p b {{
+    font-weight: bold;
   }}
 </style>
 </head>
 <body>
-  <div class="header">
-    <a href="#" class="logo">🦆 DuckDuckGo</a>
-    <input type="text" class="search-box" value="{search_term}" readonly>
+  <div class="wiki-header">
+    <a href="#" class="wiki-logo">📖 Wikipedia</a>
+    <input type="text" class="wiki-search" value="{title}" readonly>
   </div>
-  <div class="content">
-    <div style="color:#8b949e; font-size:13px; margin-bottom:20px;">Search results for: <b>{search_term}</b></div>
-    
-    <div class="result">
-      <a class="result-title" href="{res1_url}">{res1_title}</a>
-      <div class="result-url">{res1_url}</div>
-      <div class="result-snippet">{res1_snippet}</div>
-    </div>
-    
-    <div class="result">
-      <a class="result-title" href="{res2_url}">{res2_title}</a>
-      <div class="result-url">{res2_url}</div>
-      <div class="result-snippet">{res2_snippet}</div>
-    </div>
-    
-    <div class="result">
-      <a class="result-title" href="{res3_url}">{res3_title}</a>
-      <div class="result-url">{res3_url}</div>
-      <div class="result-snippet">{res3_snippet}</div>
-    </div>
+  <div class="wiki-body">
+    <h1 class="wiki-title">{title}</h1>
+    <div class="wiki-subtitle">From Wikipedia, the free encyclopedia</div>
+    <p class="wiki-p">
+      <b>{title}</b> is intelligence—perceiving, synthesizing, and inferring information—demonstrated by machines, as opposed to intelligence displayed by non-human animals and humans. Example applications include advanced web search engines, recommendation systems, understanding human speech, self-driving cars, generative tools, and competing at the highest level in strategic games.
+    </p>
+    <p class="wiki-p">
+      As a field of study, AI combines computer science, mathematics, statistics, cognitive science, and philosophy. The field was founded on the assumption that human intelligence can be so precisely described that a machine can be made to simulate it. This raised philosophical arguments about the mind and the ethical consequences of creating artificial beings.
+    </p>
   </div>
 </body>
 </html>"""
+
+
+
+    # 4. Search Results Template (DuckDuckGo style) - Fallback for other queries
+    elif query_lower:
+        return _get_duckduckgo_html(query, url)
 
     # 5. Default Website Template
     else:

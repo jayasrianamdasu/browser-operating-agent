@@ -16,18 +16,23 @@ class BrowserAgent:
         self.context = None
         self.page = None
 
-    async def start(self):
+    async def start(self, proxy: dict = None):
         """
-        Launches the Playwright async browser instance.
+        Launches the Playwright async browser instance with optional proxy settings.
         """
         logger.info(f"Starting Playwright async browser (headless={self.headless})...")
         self.playwright = await async_playwright().start()
         
+        launch_kwargs = {
+            "headless": self.headless,
+            "args": ["--disable-web-security", "--no-sandbox", "--disable-setuid-sandbox"]
+        }
+        if proxy and proxy.get("server"):
+            launch_kwargs["proxy"] = proxy
+            logger.info(f"Using proxy settings: {proxy.get('server')}")
+            
         try:
-            self.browser = await self.playwright.chromium.launch(
-                headless=self.headless,
-                args=["--disable-web-security", "--no-sandbox", "--disable-setuid-sandbox"]
-            )
+            self.browser = await self.playwright.chromium.launch(**launch_kwargs)
         except Exception as launch_err:
             err_msg = str(launch_err).lower()
             if "executable doesn't exist" in err_msg or "playwright install" in err_msg or "not installed" in err_msg:
@@ -36,10 +41,7 @@ class BrowserAgent:
                 import sys
                 subprocess.run([sys.executable, "-m", "playwright", "install", "chromium"])
                 # Retry launch
-                self.browser = await self.playwright.chromium.launch(
-                    headless=self.headless,
-                    args=["--disable-web-security", "--no-sandbox", "--disable-setuid-sandbox"]
-                )
+                self.browser = await self.playwright.chromium.launch(**launch_kwargs)
             else:
                 raise launch_err
                 
@@ -47,6 +49,27 @@ class BrowserAgent:
             viewport={"width": 1280, "height": 800},
             user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
         )
+        
+        # Inject anti-bot stealth scripts
+        await self.context.add_init_script("""
+            // 1. Hide webdriver
+            Object.defineProperty(navigator, 'webdriver', {
+                get: () => undefined
+            });
+            // 2. Mock plugins
+            Object.defineProperty(navigator, 'plugins', {
+                get: () => [1, 2, 3, 4, 5]
+            });
+            // 3. Mock languages
+            Object.defineProperty(navigator, 'languages', {
+                get: () => ['en-US', 'en']
+            });
+            // 4. Mock chrome object
+            window.chrome = {
+                runtime: {}
+            };
+        """)
+        
         self.page = await self.context.new_page()
         logger.info("browser started successfully.")
 
@@ -121,6 +144,46 @@ class BrowserAgent:
         # 1. If we are in Mock Mode, use browser-rendered mock pages if browser is available.
         # Otherwise, fall back to PIL mock screenshot generation.
         if self.use_mock:
+            # For passive actions (extract, wait, scroll), do NOT overwrite current page content
+            if action in ["extract", "wait", "scroll"]:
+                if browser_ok and self.page:
+                    try:
+                        if action == "scroll":
+                            direction = step.get("direction", "down").lower()
+                            if direction == "up":
+                                await self.page.evaluate("window.scrollBy(0, -600)")
+                            else:
+                                await self.page.evaluate("window.scrollBy(0, 600)")
+                            result["details"] = f"[Mock Mode] Scrolled {direction}"
+                        elif action == "wait":
+                            seconds = int(step.get("seconds", 2))
+                            await asyncio.sleep(seconds)
+                            result["details"] = f"[Mock Mode] Waited {seconds} seconds"
+                        elif action == "extract":
+                            target = step.get("target", "")
+                            result["details"] = f"[Mock Mode] Prepared page content for extraction target: '{target}'"
+                            
+                        await self.page.wait_for_timeout(500)
+                        await self.page.screenshot(path=screenshot_path)
+                        result["screenshot_path"] = screenshot_path
+                        result["html"] = await self.page.content()
+                        return result
+                    except Exception as browser_err:
+                        logger.warning(f"Browser action in mock mode failed: {browser_err}. Falling back to PIL.")
+                
+                # Fallback to PIL for passive actions
+                try:
+                    from utils.helpers import generate_mock_screenshot
+                    generate_mock_screenshot(url, action, screenshot_path)
+                    result["screenshot_path"] = screenshot_path
+                    result["html"] = await self.page.content() if (browser_ok and self.page) else ""
+                    result["details"] = f"[Mock Mode] Simulated {action} (PIL fallback)."
+                except Exception as pil_err:
+                    result["status"] = "error"
+                    result["details"] = f"Mock rendering failed: {pil_err}"
+                return result
+
+            # For active actions (navigate, search, click, type), render mock content
             logger.info(f"[Mock Mode] Rendering mock HTML in browser for action: {action}...")
             from utils.helpers import get_mock_html
             html_content = get_mock_html(url, query, action)
@@ -329,3 +392,50 @@ class BrowserAgent:
             result["details"] = f"Executed step {step_num} ({action}) with fallback rendering"
 
         return result
+
+    async def manual_click(self, x: int, y: int) -> dict:
+        """
+        Performs a mouse click at specific coordinates (x, y) on the active page.
+        """
+        if not self.page:
+            return {"status": "error", "details": "Browser not active"}
+        try:
+            logger.info(f"Manual click at ({x}, {y})")
+            await self.page.mouse.click(x, y)
+            return {"status": "success", "details": f"Clicked coordinates ({x}, {y})"}
+        except Exception as e:
+            logger.error(f"Manual click failed: {e}")
+            return {"status": "error", "details": f"Click failed: {e}"}
+
+    async def manual_type(self, selector: str, text: str) -> dict:
+        """
+        Types text into the element matching selector on the active page.
+        """
+        if not self.page:
+            return {"status": "error", "details": "Browser not active"}
+        try:
+            logger.info(f"Manual typing '{text}' into '{selector}'")
+            # Wait with a short timeout to prevent UI hanging
+            await self.page.wait_for_selector(selector, timeout=2000)
+            await self.page.focus(selector, timeout=2000)
+            await self.page.fill(selector, text, timeout=2000)
+            return {"status": "success", "details": f"Typed '{text}' into '{selector}'"}
+        except Exception as e:
+            logger.error(f"Manual type failed: {e}")
+            return {"status": "error", "details": f"Type failed: {e}"}
+
+    async def manual_navigate(self, url: str) -> dict:
+        """
+        Redirects the active page to the specified URL.
+        """
+        if not self.page:
+            return {"status": "error", "details": "Browser not active"}
+        try:
+            logger.info(f"Manual navigation to '{url}'")
+            if not url.startswith("http://") and not url.startswith("https://"):
+                url = f"https://{url}"
+            await self.page.goto(url, wait_until="load", timeout=12000)
+            return {"status": "success", "details": f"Navigated to {url}"}
+        except Exception as e:
+            logger.error(f"Manual navigation failed: {e}")
+            return {"status": "error", "details": f"Navigation failed: {e}"}
