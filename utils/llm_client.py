@@ -24,6 +24,15 @@ def call_llm(prompt: str, system_prompt: str = None, json_mode: bool = False, ap
             "Groq API Key is not set. Please provide a valid key in config.py, .env, or the Streamlit sidebar."
         )
     
+    # Clean leading/trailing whitespace, newlines, or quotes from pasted key
+    key = key.strip().strip("'").strip('"')
+    
+    if not key.startswith("gsk_"):
+        raise ValueError(
+            "Invalid Groq API Key format: Key must start with 'gsk_'. "
+            "Please check that you haven't pasted an OpenAI key (starts with 'sk-') or Gemini key."
+        )
+    
     model_name = model or config.GROQ_MODEL
     
     client = Groq(api_key=key)
