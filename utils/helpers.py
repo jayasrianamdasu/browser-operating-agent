@@ -712,7 +712,9 @@ def get_mock_html(url: str, query: str = "", action: str = "") -> str:
       </div>
       <div class="price-section">
         <div class="price">INR 3,120</div>
-        <button class="btn-book">Select Flight</button>
+        <a href="https://www.google.com/travel/flights" target="_blank" style="text-decoration: none;">
+          <button class="btn-book">Select Flight</button>
+        </a>
       </div>
     </div>
     
@@ -733,7 +735,9 @@ def get_mock_html(url: str, query: str = "", action: str = "") -> str:
       </div>
       <div class="price-section">
         <div class="price">INR 3,450</div>
-        <button class="btn-book">Select Flight</button>
+        <a href="https://www.google.com/travel/flights" target="_blank" style="text-decoration: none;">
+          <button class="btn-book">Select Flight</button>
+        </a>
       </div>
     </div>
     
@@ -754,7 +758,9 @@ def get_mock_html(url: str, query: str = "", action: str = "") -> str:
       </div>
       <div class="price-section">
         <div class="price">INR 3,890</div>
-        <button class="btn-book">Select Flight</button>
+        <a href="https://www.google.com/travel/flights" target="_blank" style="text-decoration: none;">
+          <button class="btn-book">Select Flight</button>
+        </a>
       </div>
     </div>
   </div>
