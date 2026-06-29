@@ -93,3 +93,26 @@ A browser tab will open automatically at `http://localhost:8501`.
 - **Selector Fallbacks**: The Browser Agent dynamically retries selector interactions by looking up button text, placeholders, and general input types if standard CSS selectors fail.
 - **Event-Loop Conflict Resolution**: Employs `nest_asyncio` to prevent event loop collision issues commonly seen when running async Playwright scripts inside Streamlit's web threads.
 - **Log Archiver & History Viewer**: Automatically saves runs into a `logs/` directory. Use the "History" tab in the UI to load past sessions and inspect old execution steps alongside captured screenshots.
+
+---
+
+## 🔍 How to Test the Deployed Cloud App (For Colleagues & Presentations)
+
+If you are sharing the live **[Streamlit Cloud Link](https://browser-operating-agent.streamlit.app)** with managers, officials, or colleagues, guide them to test it using these guidelines:
+
+### 1. No API Key Needed
+The cloud app is pre-configured to securely run live searches using our backend API key. Visitors do **not** need to register or paste any key. The **"Use Mock LLM (Offline Mode)"** box will be unchecked by default, allowing them to perform real live searches out-of-the-box.
+
+### 2. Recommended Presentation Queries
+Because the app is hosted on shared cloud servers, commercial websites with aggressive anti-bot firewalls (such as airlines, booking portals, or ticketing sites) will block the server's cloud IP and cause a timeout. 
+
+For the best demonstration, recommend they test with the following queries:
+
+* **Dynamic Web Search (Google News/GitHub links):**
+  > `Search DuckDuckGo for the best AI tools`
+* **Wikipedia Subject Extraction (Custom JS Layout):**
+  > `Go to wikipedia.org and find the page for JavaScript`
+* **Product Search & Deals (Amazon/Best Buy active links):**
+  > `Find the best noise-cancelling headphones`
+
+*Note: If you need to demonstrate the agent performing real booking actions on airline websites (e.g. Akasa Air or IndiGo), follow the **Setup & Execution Instructions** above to run the app locally on your computer. Running it locally uses your home IP, which will bypass airline firewalls successfully!*
