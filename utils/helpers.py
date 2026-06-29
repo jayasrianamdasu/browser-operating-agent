@@ -904,19 +904,28 @@ def get_mock_html(url: str, query: str = "", action: str = "") -> str:
         match = re.search(r"/wiki/([^/&#?]+)", url)
         if match:
             title = urllib.parse.unquote(match.group(1)).replace("_", " ")
-            if title.lower() in ["main page", "special:search", "search"]:
+            
+        # Clean title if it contains search query parameters or refers to main/search page
+        if title.lower() in ["main page", "special:search", "search"] or "q=" in title.lower() or "search=" in title.lower():
+            if "javascript" in query_lower or "javascript" in url_lower:
+                title = "JavaScript"
+            elif "python" in query_lower or "python" in url_lower:
                 title = "Python (programming language)"
+            else:
+                title = query.title() if query else "Artificial intelligence"
                 
-        # Clean title if it contains search query parameters
-        if "q=" in title.lower() or "search=" in title.lower():
-            title = "Python (programming language)"
+        # Clean up any trailing query details
+        title = re.sub(r"\?.+$", "", title).strip()
             
         if "python" in title.lower():
             p1 = "<b>Python</b> is a high-level, general-purpose programming language. Its design philosophy emphasizes code readability with the use of significant indentation. Python is dynamically typed and garbage-collected. It supports multiple programming paradigms, including structured, object-oriented, and functional programming."
             p2 = "It was created by Guido van Rossum and first released in 1991. The Python Software Foundation manages and directs resources for Python development. It is widely used in data science, machine learning, web development, and scripting."
+        elif "javascript" in title.lower():
+            p1 = "<b>JavaScript</b>, often abbreviated as JS, is a programming language that is one of the core technologies of the World Wide Web, alongside HTML and CSS. Over 97% of websites use JavaScript on the client side for webpage behavior, often incorporating third-party libraries."
+            p2 = "It is a multi-paradigm, dynamic, weakly typed, prototype-based language. It was created by Brendan Eich in 1995 while working at Netscape, and has since become the most popular programming language in the world."
         else:
-            p1 = f"<b>{title}</b> is intelligence—perceiving, synthesizing, and inferring information—demonstrated by machines, as opposed to intelligence displayed by non-human animals and humans. Example applications include advanced web search engines, recommendation systems, understanding human speech, self-driving cars, generative tools, and competing at the highest level in strategic games."
-            p2 = "As a field of study, AI combines computer science, mathematics, statistics, cognitive science, and philosophy. The field was founded on the assumption that human intelligence can be so precisely described that a machine can be made to simulate it. This raised philosophical arguments about the mind and the ethical consequences of creating artificial beings."
+            p1 = f"<b>{title}</b> is a topic of broad interest in technology and science. This page compiles verified facts, reference materials, definitions, and recent updates regarding {title}."
+            p2 = f"For more detailed documentations and resources about {title}, you can browse the official community guides, repository listings, or academic references."
 
         return f"""<!DOCTYPE html>
 <html>

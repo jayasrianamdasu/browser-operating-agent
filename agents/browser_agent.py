@@ -330,8 +330,13 @@ class BrowserAgent:
                         last_typed = getattr(self, "last_typed_text", "").lower()
                         if "wikipedia" in selector.lower() or "wikipedia" in query.lower() or "wikipedia" in current_url or "wikipedia" in last_typed:
                             topic = "Artificial_intelligence"
-                            if "python" in selector.lower() or "python" in query.lower() or "python" in current_url or "python" in last_typed:
-                                topic = "Python"
+                            candidates = [query, last_typed, selector]
+                            for cand in candidates:
+                                if cand:
+                                    cand_clean = cand.lower().replace("a:has-text(", "").replace(")", "").replace("'", "").replace("\"", "").strip()
+                                    if cand_clean and cand_clean not in ["wikipedia", "search", "submit", "go"]:
+                                        topic = cand_clean.replace(" ", "_")
+                                        break
                             target_url = f"https://en.wikipedia.org/wiki/{topic}"
                         elif "hacker news" in selector.lower() or "hn" in selector.lower() or "ycombinator" in current_url:
                             target_url = "https://news.ycombinator.com"
