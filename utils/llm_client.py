@@ -124,15 +124,19 @@ def call_mock_llm(prompt: str, system_prompt: str = None, json_mode: bool = Fals
         return json.dumps(plan, indent=2)
 
     elif is_extractor:
+        # Extract Source URL from the prompt
+        url_match = re.search(r"source url:\s*([^\s\n]+)", prompt_lower)
+        url_val = url_match.group(1) if url_match else ""
+        
         # Extractor mock logic
-        if "news.ycombinator.com" in prompt_lower:
+        if "news.ycombinator.com" in url_val:
             return (
                 "Extracted Stories from Hacker News:\n"
                 "1. OpenAI Releases GPT-5 with Advanced Browser Integration (Link: https://news.ycombinator.com/item?id=45192031) - 425 points by user 'techcrunch'\n"
                 "2. Show HN: Antigravity - An Autonomous Agent Framework (Link: https://news.ycombinator.com/item?id=45191540) - 180 points by user 'googledm'\n"
                 "3. The Future of Web Automation and Playwright (Link: https://news.ycombinator.com/item?id=45189211) - 95 points by user 'browserdev'"
             )
-        elif "wikipedia.org" in prompt_lower or "wikipedia" in prompt_lower:
+        elif "wikipedia.org" in url_val:
             if "python" in prompt_lower:
                 return (
                     "Extracted content from Wikipedia:\n"
@@ -145,9 +149,9 @@ def call_mock_llm(prompt: str, system_prompt: str = None, json_mode: bool = Fals
                 "as opposed to intelligence displayed by non-human animals and humans. Example applications include advanced web search engines, "
                 "recommendation systems, understanding human speech, self-driving cars, generative tools, and competing at the highest level in strategic games."
             )
-        elif any(w in prompt_lower for w in ["flight", "ticket", "bangalore", "hyderabad"]):
+        elif any(w in url_val or w in prompt_lower for w in ["flight", "ticket"]) or any(w in url_val for w in ["bangalore", "hyderabad"]):
             from utils.helpers import extract_cities_from_query, generate_random_flights
-            origin, origin_code, destination, dest_code = extract_cities_from_query(url="", query=prompt)
+            origin, origin_code, destination, dest_code = extract_cities_from_query(url=url_val, query=prompt)
             flights = generate_random_flights(origin_code, dest_code, query=prompt)
             f1, f2, f3 = flights[0], flights[1], flights[2]
             return (
@@ -156,7 +160,7 @@ def call_mock_llm(prompt: str, system_prompt: str = None, json_mode: bool = Fals
                 f"2. {f2['airline']} {f2['flight_num']}: {origin} ({origin_code}) to {destination} ({dest_code}) - Price: {f2['price']} (Link: https://www.google.com/travel/flights) - Departs {f2['dep_time']}, Duration {f2['duration']}.\n"
                 f"3. {f3['airline']} {f3['flight_num']}: {origin} ({origin_code}) to {destination} ({dest_code}) - Price: {f3['price']} (Link: https://www.google.com/travel/flights) - Departs {f3['dep_time']}, Duration {f3['duration']}."
             )
-        elif "duckduckgo.com" in prompt_lower or "search" in prompt_lower:
+        elif "duckduckgo.com" in url_val or "search" in url_val or "search" in prompt_lower:
             # Extract query from url or prompt
             query = "your search term"
             match = re.search(r"q=([^&\s\)]+)", prompt_lower)
@@ -217,8 +221,12 @@ def call_mock_llm(prompt: str, system_prompt: str = None, json_mode: bool = Fals
             )
 
     elif is_summarizer:
+        # Extract User Task from the prompt
+        task_match = re.search(r"user task:\s*([^\n]+)", prompt_lower)
+        task_val = task_match.group(1) if task_match else ""
+        
         # Summarizer mock logic
-        if "hacker news" in prompt_lower or "ycombinator" in prompt_lower:
+        if "hacker news" in task_val or "ycombinator" in task_val:
             return (
                 "### Hacker News Top Stories Summary\n\n"
                 "I have successfully navigated to **Hacker News** and retrieved the top stories:\n\n"
@@ -227,8 +235,8 @@ def call_mock_llm(prompt: str, system_prompt: str = None, json_mode: bool = Fals
                 "3. **Future of Web Automation**: A discussion detailing how Playwright and async web scrapers are critical to LLM execution.\n\n"
                 "Overall, the community is highly focused on **agentic architectures** and **browser automation**."
             )
-        elif "wikipedia" in prompt_lower:
-            if "python" in prompt_lower:
+        elif "wikipedia" in task_val:
+            if "python" in task_val:
                 return (
                     "### Wikipedia: Python (programming language) Summary\n\n"
                     "According to Wikipedia, **Python** is a high-level, general-purpose programming language known for its emphasis on code readability.\n\n"
@@ -244,7 +252,7 @@ def call_mock_llm(prompt: str, system_prompt: str = None, json_mode: bool = Fals
                 "- **Applications**: Includes search engines, recommendation engines, natural language speech understanding, autonomous vehicles, and generative tools.\n"
                 "- **Scope**: Combines computer science, linguistics, mathematics, and engineering to build systems that automate cognitive tasks."
             )
-        elif any(w in prompt_lower for w in ["flight", "ticket", "bangalore", "hyderabad"]):
+        elif any(w in task_val for w in ["flight", "ticket", "bangalore", "hyderabad"]):
             from utils.helpers import extract_cities_from_query, generate_random_flights
             origin, origin_code, destination, dest_code = extract_cities_from_query(url="", query=prompt)
             flights = generate_random_flights(origin_code, dest_code, query=prompt)
