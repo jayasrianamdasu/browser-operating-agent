@@ -15,8 +15,9 @@ class SummarizerAgent:
             "task request and the raw information extracted during web interactions, and synthesize them into a final, "
             "polished, high-quality markdown response.\n"
             "Format the summary professionally using headers, subheaders, lists, tables, and bold highlights. "
-            "Ensure all links extracted are formatted as clickable markdown links. Avoid phrases like 'based on the "
-            "provided data'. Present the findings directly as an expert assistant answering the user."
+            "Ensure all links extracted are formatted as clickable markdown links inline next to the specific items "
+            "they refer to (e.g., next to each flight, product, or article option, rather than grouping them at the bottom). "
+            "Avoid phrases like 'based on the provided data'. Present the findings directly as an expert assistant answering the user."
         )
 
     def summarize(self, task: str, extracted_data: str) -> str:
