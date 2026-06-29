@@ -405,6 +405,53 @@ def generate_mock_screenshot(url: str, action: str, path: str):
     img.save(path)
 
 
+def clean_search_query(query: str) -> str:
+    if not query:
+        return ""
+    q = query.strip()
+    q_lower = q.lower()
+    
+    prefixes = [
+        "search duckduckgo for the ",
+        "search duckduckgo for ",
+        "search google for the ",
+        "search google for ",
+        "search wikipedia for the ",
+        "search wikipedia for ",
+        "search for the ",
+        "search for ",
+        "go to wikipedia.org and find the page for ",
+        "go to wikipedia.org and find the page ",
+        "go to wikipedia.org and find ",
+        "go to wikipedia.org and ",
+        "find the page for ",
+        "find the page ",
+        "find tickets from ",
+        "search tickets from ",
+        "find details of ",
+        "find info on ",
+        "find information on ",
+        "latest news on ",
+        "latest news about ",
+        "news about ",
+        "news on ",
+        "find ",
+        "search ",
+        "go to ",
+        "lookup ",
+        "look up ",
+    ]
+    
+    for prefix in prefixes:
+        if q_lower.startswith(prefix):
+            q = q[len(prefix):].strip()
+            q_lower = q.lower()
+            break
+            
+    q = q.strip('"').strip("'").strip(".").strip()
+    return q
+
+
 def _get_duckduckgo_html(query: str, url: str) -> str:
     """
     Helper function to generate the DuckDuckGo mock search results HTML.
@@ -415,6 +462,8 @@ def _get_duckduckgo_html(query: str, url: str) -> str:
         match = re.search(r"q=([^&]+)", url_lower)
         if match:
             search_term = urllib.parse.unquote_plus(match.group(1))
+            
+    search_term = clean_search_query(search_term)
             
     # Generate dynamic slugs and details
     slug = re.sub(r'[^a-zA-Z0-9]+', '-', search_term.lower()).strip('-')

@@ -171,6 +171,10 @@ def call_mock_llm(prompt: str, system_prompt: str = None, json_mode: bool = Fals
                 if match:
                     query = match.group(1).strip()
             
+            # Clean search term
+            from utils.helpers import clean_search_query
+            query = clean_search_query(query)
+            
             # Sub-routing for specific queries to provide high-fidelity answers
             query_sub = query.lower()
             if "paying skill" in query_sub or "computer science skill" in query_sub:
@@ -275,6 +279,10 @@ def call_mock_llm(prompt: str, system_prompt: str = None, json_mode: bool = Fals
                 match = re.search(r"results for ['\"]?([^\n'\"]+)['\"]?", prompt_lower)
                 if match:
                     query = match.group(1).strip()
+            
+            # Clean search term
+            from utils.helpers import clean_search_query
+            query = clean_search_query(query)
             
             # Sub-routing for specific queries to provide high-fidelity answers
             query_sub = query.lower()
