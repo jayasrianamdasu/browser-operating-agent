@@ -256,7 +256,7 @@ def call_mock_llm(prompt: str, system_prompt: str = None, json_mode: bool = Fals
                 "- **Applications**: Includes search engines, recommendation engines, natural language speech understanding, autonomous vehicles, and generative tools.\n"
                 "- **Scope**: Combines computer science, linguistics, mathematics, and engineering to build systems that automate cognitive tasks."
             )
-        elif any(w in task_val for w in ["flight", "ticket", "bangalore", "hyderabad"]):
+        elif any(w in task_val for w in ["flight", "flights", "airline", "airlines", "sfo to tokyo", "houston to india"]):
             from utils.helpers import extract_cities_from_query, generate_random_flights
             origin, origin_code, destination, dest_code = extract_cities_from_query(url="", query=prompt)
             flights = generate_random_flights(origin_code, dest_code, query=prompt)

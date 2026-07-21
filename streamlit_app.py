@@ -161,7 +161,10 @@ st.sidebar.markdown("---")
 
 # ----------------- HISTORY PANEL -----------------
 st.sidebar.header("Execution History")
-history_logs = load_history()
+if "session_history" not in st.session_state:
+    st.session_state["session_history"] = []
+
+history_logs = st.session_state["session_history"]
 
 if history_logs:
     history_options = {
@@ -176,7 +179,7 @@ if history_logs:
             st.session_state["loaded_run"] = selected_run
             st.session_state["active_tab"] = "History & Detail Viewer"
 else:
-    st.sidebar.info("No past runs recorded.")
+    st.sidebar.info("No past runs recorded in this session.")
 
 # ----------------- STATE INITIALIZATION -----------------
 if "pipeline_stage" not in st.session_state:
@@ -514,6 +517,16 @@ with tab1:
                 duration = time.time() - st.session_state["start_time"]
                 st.session_state["run_duration"] = duration
                 save_session_log(st.session_state["task_prompt"], steps, st.session_state["execution_steps"], final_summary, duration=duration)
+                if "session_history" not in st.session_state:
+                    st.session_state["session_history"] = []
+                st.session_state["session_history"].append({
+                    "timestamp": datetime.now().isoformat(),
+                    "prompt": st.session_state["task_prompt"],
+                    "plan": steps,
+                    "steps": st.session_state["execution_steps"],
+                    "final_summary": final_summary,
+                    "duration": duration
+                })
                 stop_runner_safe()
                 st.rerun()
         else:
