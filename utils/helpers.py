@@ -200,6 +200,8 @@ def extract_cities_from_query(url: str, query: str = "") -> tuple:
         "London": "LHR",
         "Singapore": "SIN",
         "Paris": "CDG",
+        "Houston": "IAH",
+        "India": "DEL",
     }
     if origin in airport_overrides:
         origin_code = airport_overrides[origin]
@@ -241,8 +243,8 @@ def generate_random_flights(origin_code: str, dest_code: str, query: str) -> lis
         ("Vistara", "UK")
     ]
     
-    is_intl = any(c in ["SFO", "NRT", "JFK", "LHR", "SIN", "CDG"] for c in [origin_code, dest_code]) or \
-              any(w in query_lower for w in ["tokyo", "london", "singapore", "paris", "francisco", "york", "international", "japan", "england", "uk", "usa"])
+    is_intl = any(c in ["SFO", "NRT", "JFK", "LHR", "SIN", "CDG", "IAH", "DEL"] for c in [origin_code, dest_code]) or \
+              any(w in query_lower for w in ["tokyo", "london", "singapore", "paris", "francisco", "york", "international", "japan", "england", "uk", "usa", "houston", "india", "delhi", "iah", "nrt"])
               
     airline_pool = intl_airlines if is_intl else domestic_airlines
     
@@ -361,7 +363,7 @@ def generate_mock_screenshot(url: str, action: str, path: str):
         )
         draw_text_safe((50, 190), wiki_text, fill_color="#000000")
         
-    elif "flight" in url_lower or "ticket" in url_lower or "bangalore" in url_lower or "hyderabad" in url_lower:
+    elif any(w in url_lower for w in ["flight", "ticket", "bangalore", "hyderabad", "houston", "india", "sfo", "tokyo"]):
         # Flight search Layout
         origin, origin_code, destination, dest_code = extract_cities_from_query(url)
         flights = generate_random_flights(origin_code, dest_code, url)
