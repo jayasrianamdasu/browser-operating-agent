@@ -208,6 +208,16 @@ def call_mock_llm(prompt: str, system_prompt: str = None, json_mode: bool = Fals
                     "- Today's Low: $181.40\n"
                     "- Opening Price: $181.90"
                 )
+            elif any(w in query_sub for w in ["price", "cheap", "buy", "cleanser", "sunscreen", "product", "cetaphil"]):
+                product = "Cleanser" if "cleanser" in query_sub else "Sunscreen"
+                return (
+                    f"Extracted Cetaphil {product} details:\n"
+                    f"1. Cetaphil {product} (8oz) on Amazon: $9.99 (Link: https://www.amazon.com/s?k=cetaphil+{product.lower()})\n"
+                    f"2. Cetaphil {product} (16oz) on Amazon: $14.50 (Link: https://www.amazon.com/s?k=cetaphil+{product.lower()})\n"
+                    f"3. Cetaphil {product} at Walmart: $8.49 (Link: https://www.walmart.com/search?q=cetaphil+{product.lower()})\n"
+                    f"4. Cetaphil {product} at Target: $10.20 (Link: https://www.target.com/s?searchTerm=cetaphil+{product.lower()})\n"
+                    f"5. Cetaphil {product} across major retailers: 8.49-12.99 (Link: https://www.google.com/search?q=cetaphil+{product.lower()})"
+                )
             else:
                 encoded_q = urllib.parse.quote_plus(query)
                 return (
@@ -270,6 +280,21 @@ def call_mock_llm(prompt: str, system_prompt: str = None, json_mode: bool = Fals
                 f"2. **{f2['airline']} ({f2['flight_num']})**: **{f2['price']}** - Departs at {f2['dep_time']}, {f2['duration']} duration. [Book flight]({f2['link']})\n"
                 f"3. **{f3['airline']} ({f3['flight_num']})**: **{f3['price']}** - Departs at {f3['dep_time']}, {f3['duration']} duration. [Book flight]({f3['link']})\n\n"
                 f"All flights are direct. Prices are subject to availability."
+            )
+        elif any(w in task_val for w in ["price", "cheap", "buy", "cleanser", "sunscreen", "product", "cetaphil"]):
+            product = "Cleanser" if "cleanser" in task_val else "Sunscreen"
+            return (
+                f"## Price Comparison for Cetaphil {product}\n\n"
+                f"We have searched for the cheapest Cetaphil {product} products available. Below are the options we found:\n\n"
+                f"### Price Comparison\n\n"
+                f"Here are the prices for Cetaphil {product} products at various retailers:\n\n"
+                f"1. **[Cetaphil {product} (8oz) on Amazon](https://www.amazon.com/s?k=cetaphil+{product.lower()})**: $9.99\n"
+                f"2. **[Cetaphil {product} (16oz) on Amazon](https://www.amazon.com/s?k=cetaphil+{product.lower()})**: $14.50\n"
+                f"3. **[Cetaphil {product} at Walmart](https://www.walmart.com/search?q=cetaphil+{product.lower()})**: $8.49\n"
+                f"4. **[Cetaphil {product} at Target](https://www.target.com/s?searchTerm=cetaphil+{product.lower()})**: $10.20\n"
+                f"5. **[Cetaphil {product} across major retailers](https://www.walmart.com/search?q=cetaphil+{product.lower()})**: 8.49—12.99\n\n"
+                f"### Recommended Option\n\n"
+                f"The cheapest option is the Cetaphil {product} available at **[Walmart](https://www.walmart.com/search?q=cetaphil+{product.lower()})** for **$8.49**."
             )
         else:
             # Extract query
