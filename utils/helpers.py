@@ -166,7 +166,13 @@ def extract_cities_from_query(url: str, query: str = "") -> tuple:
     if not query:
         return origin, origin_code, destination, dest_code
         
-    query_lower = query.lower()
+    # If query is a multi-line prompt block, extract only the first line
+    first_line = query.split("\n")[0]
+    for label in ["original task:", "user task:", "task:"]:
+        if first_line.lower().startswith(label):
+            first_line = first_line[len(label):].strip()
+            
+    query_lower = first_line.lower()
     
     # Check if there is " to " in the query, which is standard for flight routing
     if " to " in query_lower:

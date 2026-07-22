@@ -156,9 +156,9 @@ def call_mock_llm(prompt: str, system_prompt: str = None, json_mode: bool = Fals
             f1, f2, f3 = flights[0], flights[1], flights[2]
             return (
                 f"Extracted flight information from search results:\n"
-                f"1. {f1['airline']} {f1['flight_num']}: {origin} ({origin_code}) to {destination} ({dest_code}) - Price: {f1['price']} (Link: https://www.google.com/travel/flights) - Departs {f1['dep_time']}, Duration {f1['duration']}.\n"
-                f"2. {f2['airline']} {f2['flight_num']}: {origin} ({origin_code}) to {destination} ({dest_code}) - Price: {f2['price']} (Link: https://www.google.com/travel/flights) - Departs {f2['dep_time']}, Duration {f2['duration']}.\n"
-                f"3. {f3['airline']} {f3['flight_num']}: {origin} ({origin_code}) to {destination} ({dest_code}) - Price: {f3['price']} (Link: https://www.google.com/travel/flights) - Departs {f3['dep_time']}, Duration {f3['duration']}."
+                f"1. {f1['airline']} {f1['flight_num']}: {origin} ({origin_code}) to {destination} ({dest_code}) - Price: {f1['price']} (Link: {f1['link']}) - Departs {f1['dep_time']}, Duration {f1['duration']}.\n"
+                f"2. {f2['airline']} {f2['flight_num']}: {origin} ({origin_code}) to {destination} ({dest_code}) - Price: {f2['price']} (Link: {f2['link']}) - Departs {f2['dep_time']}, Duration {f2['duration']}.\n"
+                f"3. {f3['airline']} {f3['flight_num']}: {origin} ({origin_code}) to {destination} ({dest_code}) - Price: {f3['price']} (Link: {f3['link']}) - Departs {f3['dep_time']}, Duration {f3['duration']}."
             )
         elif "duckduckgo.com" in url_val or "search" in url_val or "search" in prompt_lower:
             # Extract query from url or prompt
@@ -260,15 +260,15 @@ def call_mock_llm(prompt: str, system_prompt: str = None, json_mode: bool = Fals
             )
         elif any(w in task_val for w in ["flight", "flights", "airline", "airlines", "sfo to tokyo", "houston to india"]):
             from utils.helpers import extract_cities_from_query, generate_random_flights
-            origin, origin_code, destination, dest_code = extract_cities_from_query(url="", query=prompt)
-            flights = generate_random_flights(origin_code, dest_code, query=prompt)
+            origin, origin_code, destination, dest_code = extract_cities_from_query(url="", query=task_val)
+            flights = generate_random_flights(origin_code, dest_code, query=task_val)
             f1, f2, f3 = flights[0], flights[1], flights[2]
             return (
                 f"### ✈️ Cheapest Flights from {origin} to {destination}\n\n"
                 f"Here are the top flight options retrieved from the search results:\n\n"
-                f"1. **{f1['airline']} ({f1['flight_num']})**: **{f1['price']}** (Cheapest option) - Departs at {f1['dep_time']}, {f1['duration']} duration. [Book flight](https://www.google.com/travel/flights)\n"
-                f"2. **{f2['airline']} ({f2['flight_num']})**: **{f2['price']}** - Departs at {f2['dep_time']}, {f2['duration']} duration. [Book flight](https://www.google.com/travel/flights)\n"
-                f"3. **{f3['airline']} ({f3['flight_num']})**: **{f3['price']}** - Departs at {f3['dep_time']}, {f3['duration']} duration. [Book flight](https://www.google.com/travel/flights)\n\n"
+                f"1. **{f1['airline']} ({f1['flight_num']})**: **{f1['price']}** (Cheapest option) - Departs at {f1['dep_time']}, {f1['duration']} duration. [Book flight]({f1['link']})\n"
+                f"2. **{f2['airline']} ({f2['flight_num']})**: **{f2['price']}** - Departs at {f2['dep_time']}, {f2['duration']} duration. [Book flight]({f2['link']})\n"
+                f"3. **{f3['airline']} ({f3['flight_num']})**: **{f3['price']}** - Departs at {f3['dep_time']}, {f3['duration']} duration. [Book flight]({f3['link']})\n\n"
                 f"All flights are direct. Prices are subject to availability."
             )
         else:
