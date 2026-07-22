@@ -254,27 +254,26 @@ class BrowserAgent:
                 
             elif action == "search":
                 encoded_query = urllib.parse.quote_plus(query)
-                # Try live DuckDuckGo
-                url = f"https://html.duckduckgo.com/html/?q={encoded_query}"
-                logger.info(f"Searching DuckDuckGo for: '{query}'...")
+                # Use Yahoo Search to bypass bot checks and rate-limiting
+                url = f"https://search.yahoo.com/search?p={encoded_query}"
+                logger.info(f"Searching Yahoo Search for: '{query}'...")
                 try:
-                    await self.page.goto(url, timeout=12000, wait_until="load")
-                    # Check for rate-limiting, captcha, block screens, or empty search results
+                    await self.page.goto(url, timeout=15000, wait_until="load")
                     content = await self.page.content()
                     content_lower = content.lower()
                     
                     is_blocked = any(term in content_lower for term in ["forbidden", "too many requests", "access denied", "security challenge", "captcha", "robot"])
-                    is_empty_search = not any(term in content_lower for term in ["result__snippet", "result__url", "result__title", 'class="result"'])
+                    is_empty_search = "yahoo" not in content_lower
                     
                     if is_blocked or is_empty_search:
                         raise ValueError("Search results blocked, rate-limited, or empty")
-                    result["details"] = f"Searched DuckDuckGo for '{query}'"
+                    result["details"] = f"Searched Yahoo Search for '{query}'"
                 except Exception as search_err:
                     logger.warning(f"Live search failed or was blocked: {search_err}. Rendering mock search results in browser.")
                     from utils.helpers import get_mock_html
                     html_content = get_mock_html(url, query, action)
                     await self.page.set_content(html_content)
-                    result["details"] = f"Searched DuckDuckGo for '{query}' (fallback styled results due to block/timeout)"
+                    result["details"] = f"Searched Yahoo Search for '{query}' (fallback styled results due to block/timeout)"
                     
             elif action == "type":
                 selector = step.get("selector", "")

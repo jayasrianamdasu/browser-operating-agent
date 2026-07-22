@@ -53,6 +53,16 @@ def clean_html(html_content: str, max_chars: int = 15000, page_url: str = "") ->
                         except Exception:
                             pass
                             
+                    # Parse and decode Yahoo redirect links (RU parameter)
+                    if "r.search.yahoo.com" in href and "/RU=" in href:
+                        try:
+                            parts = href.split("/RU=")
+                            if len(parts) > 1:
+                                val = parts[1].split("/")[0]
+                                href = urllib.parse.unquote(val)
+                        except Exception:
+                            pass
+                            
                     # 2. Resolve relative links (e.g. /news -> https://domain.com/news)
                     if href.startswith("/") and page_url:
                         href = urllib.parse.urljoin(page_url, href)
