@@ -226,8 +226,10 @@ def call_mock_llm(prompt: str, system_prompt: str = None, json_mode: bool = Fals
 
     elif is_summarizer:
         # Extract User Task from the prompt
-        task_match = re.search(r"user task:\s*([^\n]+)", prompt_lower)
-        task_val = task_match.group(1) if task_match else ""
+        task_match = re.search(r"(?:user task|original task):\s*([^\n]+)", prompt_lower)
+        task_val = task_match.group(1).strip() if task_match else ""
+        if not task_val:
+            task_val = prompt_lower
         
         # Summarizer mock logic
         if "hacker news" in task_val or "ycombinator" in task_val:
