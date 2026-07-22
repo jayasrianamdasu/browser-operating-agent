@@ -303,13 +303,32 @@ def generate_random_flights(origin_code: str, dest_code: str, query: str) -> lis
         else:
             price = f"INR {random.randint(3100, 7900):,}"
             
+        # Generate direct carrier search link
+        airline_url_map = {
+            "United Airlines": f"https://www.united.com/en/us/fsr/chooseFlights?f={origin_code}&t={dest_code}",
+            "Delta Air Lines": f"https://www.delta.com/flight-search/search?origin={origin_code}&destination={dest_code}",
+            "Japan Airlines": f"https://www.jal.co.jp/world/en/?origin={origin_code}&destination={dest_code}",
+            "ANA Flights": f"https://www.ana.co.jp/en/us/?origin={origin_code}&destination={dest_code}",
+            "Singapore Airlines": f"https://www.singaporeair.com/en_UK/us/home?origin={origin_code}&destination={dest_code}",
+            "Emirates": f"https://www.emirates.com/english/book/flights/?from={origin_code}&to={dest_code}",
+            "British Airways": f"https://www.britishairways.com/travel/fx/public/en_us?origin={origin_code}&destination={dest_code}",
+            "Lufthansa": f"https://www.lufthansa.com/us/en/flight-search?origin={origin_code}&destination={dest_code}",
+            "IndiGo": f"https://www.goindigo.in/booking/select-flight.html?from={origin_code}&to={dest_code}",
+            "Air India": f"https://www.airindia.com/in/en/book/flights.html?origin={origin_code}&destination={dest_code}",
+            "Akasa Air": f"https://www.akasaair.com/book-flight?origin={origin_code}&destination={dest_code}",
+            "SpiceJet": f"https://www.spicejet.com/?origin={origin_code}&destination={dest_code}",
+            "Vistara": f"https://www.airvistara.com/in/en/flight-booking?origin={origin_code}&destination={dest_code}"
+        }
+        link = airline_url_map.get(airline, f"https://www.google.com/travel/flights?q=flights+from+{origin_code}+to+{dest_code}")
+            
         flights.append({
             "airline": airline,
             "flight_num": flight_num,
             "dep_time": dep_time,
             "arr_time": arr_time,
             "duration": dur_str,
-            "price": price
+            "price": price,
+            "link": link
         })
         
     random.setstate(state)
@@ -773,7 +792,7 @@ def get_mock_html(url: str, query: str = "", action: str = "") -> str:
       <div class="flight-info">
         <div>
           <div class="airline">
-            <a href="https://www.google.com/travel/flights" target="_blank" style="color: #fff; text-decoration: none;">Akasa Air</a>
+            <a href="F1_LINK_PLACEHOLDER" target="_blank" style="color: #fff; text-decoration: none;">Akasa Air</a>
           </div>
           <div style="font-size:12px; color:#9ca3af;">QP-1102</div>
         </div>
@@ -788,7 +807,7 @@ def get_mock_html(url: str, query: str = "", action: str = "") -> str:
       </div>
       <div class="price-section">
         <div class="price">INR 3,120</div>
-        <a href="https://www.google.com/travel/flights" target="_blank" style="text-decoration: none;">
+        <a href="F1_LINK_PLACEHOLDER" target="_blank" style="text-decoration: none;">
           <button class="btn-book">Select Flight</button>
         </a>
       </div>
@@ -798,7 +817,7 @@ def get_mock_html(url: str, query: str = "", action: str = "") -> str:
       <div class="flight-info">
         <div>
           <div class="airline">
-            <a href="https://www.google.com/travel/flights" target="_blank" style="color: #fff; text-decoration: none;">IndiGo</a>
+            <a href="F2_LINK_PLACEHOLDER" target="_blank" style="color: #fff; text-decoration: none;">IndiGo</a>
           </div>
           <div style="font-size:12px; color:#9ca3af;">6E-2412</div>
         </div>
@@ -813,7 +832,7 @@ def get_mock_html(url: str, query: str = "", action: str = "") -> str:
       </div>
       <div class="price-section">
         <div class="price">INR 3,450</div>
-        <a href="https://www.google.com/travel/flights" target="_blank" style="text-decoration: none;">
+        <a href="F2_LINK_PLACEHOLDER" target="_blank" style="text-decoration: none;">
           <button class="btn-book">Select Flight</button>
         </a>
       </div>
@@ -823,7 +842,7 @@ def get_mock_html(url: str, query: str = "", action: str = "") -> str:
       <div class="flight-info">
         <div>
           <div class="airline">
-            <a href="https://www.google.com/travel/flights" target="_blank" style="color: #fff; text-decoration: none;">Air India</a>
+            <a href="F3_LINK_PLACEHOLDER" target="_blank" style="color: #fff; text-decoration: none;">Air India</a>
           </div>
           <div style="font-size:12px; color:#9ca3af;">AI-512</div>
         </div>
@@ -838,7 +857,7 @@ def get_mock_html(url: str, query: str = "", action: str = "") -> str:
       </div>
       <div class="price-section">
         <div class="price">INR 3,890</div>
-        <a href="https://www.google.com/travel/flights" target="_blank" style="text-decoration: none;">
+        <a href="F3_LINK_PLACEHOLDER" target="_blank" style="text-decoration: none;">
           <button class="btn-book">Select Flight</button>
         </a>
       </div>
@@ -865,6 +884,8 @@ def get_mock_html(url: str, query: str = "", action: str = "") -> str:
         ).replace(
             "INR 3,120", f1["price"]
         ).replace(
+            "F1_LINK_PLACEHOLDER", f1["link"]
+        ).replace(
             "IndiGo", f2["airline"]
         ).replace(
             "6E-2412", f2["flight_num"]
@@ -875,6 +896,8 @@ def get_mock_html(url: str, query: str = "", action: str = "") -> str:
         ).replace(
             "INR 3,450", f2["price"]
         ).replace(
+            "F2_LINK_PLACEHOLDER", f2["link"]
+        ).replace(
             "Air India", f3["airline"]
         ).replace(
             "AI-512", f3["flight_num"]
@@ -884,6 +907,8 @@ def get_mock_html(url: str, query: str = "", action: str = "") -> str:
             "1h 20m", f3["duration"]
         ).replace(
             "INR 3,890", f3["price"]
+        ).replace(
+            "F3_LINK_PLACEHOLDER", f3["link"]
         )
 
     # 2. Search Results Template (DuckDuckGo style) - Priority when searching other terms
