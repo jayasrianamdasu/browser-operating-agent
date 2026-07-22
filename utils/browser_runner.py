@@ -22,6 +22,8 @@ class BrowserRunner:
         if self.running:
             return
         self.running = True
+        self.headless = headless
+        self.use_mock = use_mock
         
         # Clear queues
         while not self.cmd_queue.empty():

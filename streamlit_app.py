@@ -209,6 +209,13 @@ if "final_summary" not in st.session_state:
 
 def get_runner_safe():
     r = st.session_state.get("runner")
+    # If the user changed the headless or mock toggle in the sidebar, stop the current runner and restart it!
+    if r is not None and r.running:
+        if getattr(r, "use_mock", None) != use_mock or getattr(r, "headless", None) != headless:
+            r.stop()
+            st.session_state["runner"] = None
+            r = None
+            
     if r is None or not r.running:
         r = BrowserRunner()
         try:
