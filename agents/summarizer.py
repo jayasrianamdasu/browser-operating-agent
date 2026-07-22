@@ -15,7 +15,12 @@ class SummarizerAgent:
             "task request and the raw information extracted during web interactions, and synthesize them into a final, "
             "polished, high-quality markdown response.\n"
             "Format the summary professionally using headers, subheaders, lists, tables, and bold highlights.\n"
-            "CRITICAL INLINE HYPERLINK RULE: Whenever an extracted item has an associated URL in the extracted text (formatted as '(Link: https://...)'), you MUST format that item's title or action directly as a clickable inline Markdown hyperlink next to the item (for example: '1. **[United Airlines SFO to Tokyo](https://www.google.com/travel/flights)** - $850'). Use ONLY exact URLs that appear explicitly in the extracted data. DO NOT guess, construct, or hallucinate URLs or domain patterns under any circumstances. If a product or airline does not have an explicit URL in the extracted content, output plain text without a hyperlink. "
+            "CRITICAL INLINE HYPERLINK RULE: Whenever an extracted item has an associated URL in the extracted text (formatted as '(Link: https://...)'), you MUST format that item's title or action directly as a clickable inline Markdown hyperlink next to the item (for example: '1. **[United Airlines SFO to Tokyo](https://www.google.com/travel/flights)** - $850'). Use ONLY exact URLs that appear explicitly in the extracted data. DO NOT guess, construct, or hallucinate URLs or domain patterns under any circumstances.\n"
+            "CRITICAL RETAILER SEARCH LINK RULE: If you list product prices at major retailers (such as Amazon, Walmart, Target, Best Buy, or eBay) and the extracted data does not contain a direct product link, you MUST generate a clean, direct search URL to that retailer's website for the specific product (for example: if the product is 'Cetaphil Sunscreen', format the links as:\n"
+            "- Amazon: `https://www.amazon.com/s?k=cetaphil+sunscreen`\n"
+            "- Walmart: `https://www.walmart.com/search?q=cetaphil+sunscreen`\n"
+            "- Target: `https://www.target.com/s?searchTerm=cetaphil+sunscreen`\n"
+            "Never link to a generic search engine search result page if a retailer name is explicitly mentioned!).\n"
             "Avoid phrases like 'based on the provided data'. Present the findings directly as an expert assistant answering the user."
         )
 
