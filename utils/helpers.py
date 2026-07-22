@@ -29,11 +29,19 @@ def clean_html(html_content: str, max_chars: int = 15000) -> str:
         for element in soup.find_all(text=True):
             text = element.strip()
             if text:
-                parent = element.parent
-                # If element is an anchor link, format as 'Text (Link: href)'
-                if parent and parent.name == "a" and parent.has_attr("href"):
-                    href = parent["href"]
-                    # If relative link, we keep it as is
+                # Walk up ancestors to find if this text is enclosed inside an anchor <a> link
+                a_tag = None
+                curr = element.parent
+                while curr:
+                    if curr.name == "a":
+                        a_tag = curr
+                        break
+                    if curr.name in ["body", "html", "div", "section", "table", "tr", "td"]:
+                        break
+                    curr = curr.parent
+                
+                if a_tag and a_tag.has_attr("href"):
+                    href = a_tag["href"]
                     cleaned_lines.append(f"{text} (Link: {href})")
                 else:
                     cleaned_lines.append(text)
