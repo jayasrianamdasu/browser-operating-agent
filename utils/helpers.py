@@ -317,8 +317,8 @@ def generate_random_flights(origin_code: str, dest_code: str, query: str) -> lis
         airline_url_map = {
             "United Airlines": f"https://www.united.com/en/us/fsr/chooseFlights?f={origin_code}&t={dest_code}",
             "Delta Air Lines": f"https://www.delta.com/flight-search/search?origin={origin_code}&destination={dest_code}",
-            "Japan Airlines": f"https://www.jal.co.jp/world/en/?origin={origin_code}&destination={dest_code}",
-            "ANA Flights": f"https://www.ana.co.jp/en/us/?origin={origin_code}&destination={dest_code}",
+            "Japan Airlines": f"https://www.jal.co.jp/jp/en/",
+            "ANA Flights": f"https://www.ana.co.jp/en/us/",
             "Singapore Airlines": f"https://www.singaporeair.com/en_UK/us/home?origin={origin_code}&destination={dest_code}",
             "Emirates": f"https://www.emirates.com/english/book/flights/?from={origin_code}&to={dest_code}",
             "British Airways": f"https://www.britishairways.com/travel/fx/public/en_us?origin={origin_code}&destination={dest_code}",
