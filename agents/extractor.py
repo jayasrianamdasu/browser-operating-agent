@@ -16,6 +16,7 @@ class ExtractorAgent:
             "relevant information from the provided text content of a webpage based on the user's extraction target.\n"
             "Focus ONLY on the information requested. Extract items, titles, links, prices, dates, or summaries "
             "as specified by the target. Format your output as a clean bulleted list or markdown table. "
+            "CRITICAL LINK PRESERVATION RULE: You MUST always preserve and output any associated URLs/links found next to the target items in the webpage text (for example, if the text contains 'Delta Air Lines (Link: https://...)', you must output the link '(Link: https://...)' next to Delta Air Lines in your bulleted list). Never strip or omit these links. "
             "Do not include conversational filler, meta-explanations, or intros. Return only the extracted data."
         )
 
