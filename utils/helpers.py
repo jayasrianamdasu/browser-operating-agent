@@ -772,7 +772,9 @@ def get_mock_html(url: str, query: str = "", action: str = "") -> str:
     <div class="card">
       <div class="flight-info">
         <div>
-          <div class="airline">Akasa Air</div>
+          <div class="airline">
+            <a href="https://www.google.com/travel/flights" target="_blank" style="color: #fff; text-decoration: none;">Akasa Air</a>
+          </div>
           <div style="font-size:12px; color:#9ca3af;">QP-1102</div>
         </div>
         <div>
@@ -795,7 +797,9 @@ def get_mock_html(url: str, query: str = "", action: str = "") -> str:
     <div class="card">
       <div class="flight-info">
         <div>
-          <div class="airline">IndiGo</div>
+          <div class="airline">
+            <a href="https://www.google.com/travel/flights" target="_blank" style="color: #fff; text-decoration: none;">IndiGo</a>
+          </div>
           <div style="font-size:12px; color:#9ca3af;">6E-2412</div>
         </div>
         <div>
@@ -818,7 +822,9 @@ def get_mock_html(url: str, query: str = "", action: str = "") -> str:
     <div class="card">
       <div class="flight-info">
         <div>
-          <div class="airline">Air India</div>
+          <div class="airline">
+            <a href="https://www.google.com/travel/flights" target="_blank" style="color: #fff; text-decoration: none;">Air India</a>
+          </div>
           <div style="font-size:12px; color:#9ca3af;">AI-512</div>
         </div>
         <div>
