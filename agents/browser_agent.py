@@ -263,7 +263,7 @@ class BrowserAgent:
                     content = await self.page.content()
                     content_lower = content.lower()
                     
-                    is_blocked = any(term in content_lower for term in ["support", "forbidden", "too many requests", "access denied", "security challenge", "captcha", "robot"])
+                    is_blocked = any(term in content_lower for term in ["forbidden", "too many requests", "access denied", "security challenge", "captcha", "robot"])
                     is_empty_search = not any(term in content_lower for term in ["result__snippet", "result__url", "result__title", 'class="result"'])
                     
                     if is_blocked or is_empty_search:
