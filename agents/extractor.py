@@ -26,7 +26,7 @@ class ExtractorAgent:
         logger.info(f"Extracting information for target: '{target}' on page: {url}")
         
         # Clean HTML first to save tokens and fit context
-        cleaned_text = clean_html(html_content)
+        cleaned_text = clean_html(html_content, page_url=url)
         
         prompt = (
             f"Source URL: {url}\n"

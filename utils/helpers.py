@@ -9,7 +9,7 @@ import config
 
 logger = logging.getLogger("browser_agent.helpers")
 
-def clean_html(html_content: str, max_chars: int = 15000) -> str:
+def clean_html(html_content: str, max_chars: int = 15000, page_url: str = "") -> str:
     """
     Cleans raw HTML by removing unnecessary tags (scripts, styles, head, svgs)
     to save token usage and fits content within LLM context window limits.
@@ -42,6 +42,21 @@ def clean_html(html_content: str, max_chars: int = 15000) -> str:
                 
                 if a_tag and a_tag.has_attr("href"):
                     href = a_tag["href"]
+                    
+                    # 1. Parse and decode DuckDuckGo redirect links
+                    if "uddg=" in href or "?uddg=" in href:
+                        try:
+                            parsed_url = urllib.parse.urlparse(href)
+                            params = urllib.parse.parse_qs(parsed_url.query)
+                            if "uddg" in params:
+                                href = params["uddg"][0]
+                        except Exception:
+                            pass
+                            
+                    # 2. Resolve relative links (e.g. /news -> https://domain.com/news)
+                    if href.startswith("/") and page_url:
+                        href = urllib.parse.urljoin(page_url, href)
+                        
                     cleaned_lines.append(f"{text} (Link: {href})")
                 else:
                     cleaned_lines.append(text)
